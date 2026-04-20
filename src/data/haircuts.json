@@ -9,19 +9,22 @@
     "id": "low-fade",
     "name": "Degradê Baixo (Low Fade)",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "low-fade with a low hair"
   },
   {
     "id": "mid-fade",
     "name": "Degradê Médio (Mid Fade)",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "mid-fade with a low hair"
   },
   {
     "id": "high-fade",
     "name": "Degradê Alto (High Fade)",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "high-fade with a low hair"
   },
   {
     "id": "taper-fade",
@@ -75,19 +78,22 @@
     "id": "low-fade",
     "name": "Degradê Baixo (Low Fade)",
     "category": "Médio",
-    "image": ""
+    "image": "",
+    "prompt": "low-fade with a medium hair"
   },
   {
     "id": "mid-fade",
     "name": "Degradê Médio (Mid Fade)",
     "category": "Médio",
-    "image": ""
+    "image": "",
+    "prompt": "mid-fade with a medium hair"
   },
   {
     "id": "high-fade",
     "name": "Degradê Alto (High Fade)",
     "category": "Médio",
-    "image": ""
+    "image": "",
+    "prompt": "high-fade with a medium hair"
   },
   {
     "id": "modern-mullet",
@@ -129,19 +135,23 @@
     "id": "low-fade",
     "name": "Degradê Baixo (Low Fade)",
     "category": "Grande",
-    "image": ""
+    "image": "",
+    "prompt": "low-fade with a big hair"
   },
   {
     "id": "mid-fade",
     "name": "Degradê Médio (Mid Fade)",
     "category": "Grande",
-    "image": ""
+    "image": "",
+    "prompt": "mid-fade with a big hair"
+
   },
   {
     "id": "high-fade",
     "name": "Degradê Alto (High Fade)",
     "category": "Grande",
-    "image": ""
+    "image": "",
+    "prompt": "high-fade with a big hair"
   },
   {
     "id": "long-surfer",

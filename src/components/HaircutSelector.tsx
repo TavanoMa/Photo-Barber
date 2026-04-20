@@ -48,8 +48,8 @@ export default function HaircutSelector({
 
     // A MÁGICA ACONTECE AQUI:
     // Pega o 'prompt' se existir. Se não existir, pega o 'name'.
-    const haircutText = newHaircut ? (newHaircut.prompt || newHaircut.name) : null
-    const beardText = newBeard ? (newBeard.prompt || newBeard.name) : null
+    const haircutText = newHaircut ? (newHaircut.prompt + newHaircut.name || newHaircut.name) : null
+    const beardText = newBeard ? (newBeard.prompt + newBeard.name || newBeard.name) : null
 
     // Junta as descrições pro backend
     const combination = [haircutText, beardText].filter(Boolean).join(" and ")
