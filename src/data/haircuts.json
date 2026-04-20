@@ -1,0 +1,177 @@
+[
+  {
+    "id": "buzz-cut",
+    "name": "Raspado (Buzz Cut)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "low-fade",
+    "name": "Degradê Baixo (Low Fade)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "mid-fade",
+    "name": "Degradê Médio (Mid Fade)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "high-fade",
+    "name": "Degradê Alto (High Fade)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "taper-fade",
+    "name": "Americano (Taper Fade)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "cesar-cut",
+    "name": "Corte César",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "short-curly-fade",
+    "name": "Cacho Curto com Degradê",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "short-military-coily",
+    "name": "Crespo Curto (Militar)",
+    "category": "Curto",
+    "image": ""
+  },
+  {
+    "id": "modern-quiff",
+    "name": "Topete Moderno (Quiff)",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "medium-defined-curly",
+    "name": "Cacheado Médio Definido",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "medium-coily-nudred",
+    "name": "Crespo Médio com Nudred",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "burst-fade",
+    "name": "Moicano Disfarçado (Burst Fade)",
+    "category": "Médio",
+    "image": ""
+  },
+    {
+    "id": "low-fade",
+    "name": "Degradê Baixo (Low Fade)",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "mid-fade",
+    "name": "Degradê Médio (Mid Fade)",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "high-fade",
+    "name": "Degradê Alto (High Fade)",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "modern-mullet",
+    "name": "Mullet Moderno",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "textured-cut",
+    "name": "Corte Texturizado",
+    "category": "Médio",
+    "image": ""
+  },
+  {
+    "id": "black-power",
+    "name": "Black Power (Crespo Grande)",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "long-natural-curly",
+    "name": "Cachos Longos Naturais",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "nago-box-braids",
+    "name": "Tranças Nagô / Box Braids",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "man-bun-samurai",
+    "name": "Coque Samurai",
+    "category": "Grande",
+    "image": ""
+  },
+   {
+    "id": "low-fade",
+    "name": "Degradê Baixo (Low Fade)",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "mid-fade",
+    "name": "Degradê Médio (Mid Fade)",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "high-fade",
+    "name": "Degradê Alto (High Fade)",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "long-surfer",
+    "name": "Surfista Longo",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "dreadlocks",
+    "name": "Dreadlocks",
+    "category": "Grande",
+    "image": ""
+  },
+  {
+    "id": "barbacheia",
+    "name": "Barba Cheia",
+    "category": "Barba",
+    "image": ""
+  },
+  {
+    "id": "bigode",
+    "name": "Bigode",
+    "category": "Barba",
+    "image": ""
+  },
+  {
+    "id": "cavanhaque",
+    "name": "Cavanhaque",
+    "category": "Barba",
+    "image": "",
+    "prompt": "goatee beard, facial hair on chin and mustache only"
+  }
+]
