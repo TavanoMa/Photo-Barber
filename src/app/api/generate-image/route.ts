@@ -99,6 +99,7 @@ IMPORTANTE:
 - NÃO alterar rosto
 - NÃO mudar idade ou etnia
 - NÃO mudar expressão facial
+- NÃO mudar a cor do cabelo do cliente
 
 Tarefa:
 Aplicar um corte de cabelo REALISTA: ${haircut}

@@ -27,9 +27,9 @@ export default function Hero() {
 
         {/* title */}
         <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-white tracking-tight">
-          Teste seu corte antes{" "}
+          Experimente seu{" "}
           <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">
-            de vir para a Cacique’s
+            novo visual
           </span>
         </h1>
 
