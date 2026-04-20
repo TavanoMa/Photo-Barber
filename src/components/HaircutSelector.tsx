@@ -9,7 +9,7 @@ interface Props {
 }
 
 const fallbackImage =
-  "https://crewcuthair.com/wp-content/uploads/2026/01/Buzz-Cut-Burst-Fade-With-Line-Up.webp"
+  "https://cdn.leroymerlin.com.br/products/papel_de_parede_liso_preto_com_glitter_1567181465_30e0_300x300.jpg"
 
 // Criando uma tipagem para facilitar
 type ItemType = {

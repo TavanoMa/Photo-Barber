@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 
 export default function Header() {
   return (
@@ -8,6 +9,8 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-6 h-[84px] flex items-center justify-between">
         
         {/* LOGO + NOME */}
+        <Link href={"/"}>
+
         <div className="flex items-center gap-4 group cursor-pointer">
           
           {/* Logo com glow */}
@@ -34,6 +37,7 @@ export default function Header() {
             </p>
           </div>
         </div>
+        </Link>
 
         
 
