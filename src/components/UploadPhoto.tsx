@@ -6,7 +6,8 @@ interface Props {
 }
 
 export default function UploadPhoto({ onSelect }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
   function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -22,14 +23,23 @@ export default function UploadPhoto({ onSelect }: Props) {
     <div>
       <p className="mb-4 text-white/80">Sua foto</p>
 
-      {/* CARD */}
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
 
+        {/* INPUT CAMERA */}
         <input
-          ref={inputRef}
+          ref={cameraRef}
           type="file"
           accept="image/*"
+          capture="user"
+          className="hidden"
+          onChange={handleSelectImage}
+        />
 
+        {/* INPUT GALERIA */}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
           className="hidden"
           onChange={handleSelectImage}
         />
@@ -37,7 +47,7 @@ export default function UploadPhoto({ onSelect }: Props) {
         {!preview && (
           <>
             <div className="w-16 h-16 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl text-purple-400 mb-6">
-              ⬆️
+              📸
             </div>
 
             <h3 className="text-lg font-semibold mb-2">
@@ -48,13 +58,21 @@ export default function UploadPhoto({ onSelect }: Props) {
               Use uma foto frontal com boa iluminação para melhores resultados
             </p>
 
-            {/* BOTÃO DENTRO (SÓ SEM IMAGEM) */}
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition cursor-pointer mt-4 relative z-10"
-            >
-              Selecionar imagem
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => cameraRef.current?.click()}
+                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
+              >
+                Tirar foto
+              </button>
+
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition cursor-pointer"
+              >
+                Escolher imagem
+              </button>
+            </div>
           </>
         )}
 
@@ -66,14 +84,22 @@ export default function UploadPhoto({ onSelect }: Props) {
         )}
       </div>
 
-      {/* BOTÃO FORA (SÓ COM IMAGEM) */}
       {preview && (
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="mt-4 px-6 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition cursor-pointer"
-        >
-          Escolher outra imagem
-        </button>
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={() => cameraRef.current?.click()}
+            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
+          >
+            Tirar outra foto
+          </button>
+
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="px-6 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition cursor-pointer"
+          >
+            Escolher outra imagem
+          </button>
+        </div>
       )}
     </div>
   )
