@@ -92,23 +92,96 @@ export async function POST(req: Request) {
     const imageDataUri = await fileToDataUri(file)
 
     const prompt = `
-Fotografia hiper-realista de rosto masculino.
+You are a professional photo retoucher specialized in realistic hair editing.
+Your task is to edit the uploaded photo by applying a new haircut while keeping the person exactly the same.
+IDENTITY RULES (very important):
 
-IMPORTANTE:
-- preservar 100% identidade da pessoa
-- NÃO alterar rosto
-- NÃO mudar idade ou etnia
-- NÃO mudar expressão facial
-- NÃO mudar a cor do cabelo do cliente
 
-Tarefa:
-Aplicar um corte de cabelo REALISTA: ${haircut}
+Keep the same person and same face.
 
-Regras:
-- cabelo deve parecer natural
-- iluminação realista
-- qualidade profissional
-- fotografia de estúdio
+
+Do not change facial features.
+
+
+Do not change skin tone or ethnicity.
+
+
+Do not change age or gender.
+
+
+Do not change facial expression.
+
+
+Do not change face shape.
+
+
+Do not beautify or stylize the face.
+
+
+Do not change hair color.
+
+
+Preserve identity 100%.
+
+
+Only the hair and background can be modified.
+TASK
+Apply this haircut in a realistic way: ${haircut}
+HAIR EDITING GUIDELINES:
+
+
+The haircut must look natural and believable.
+
+
+Respect the original hairline and hair direction.
+
+
+Adapt the haircut to the current hair length.
+
+
+If the hair is longer, realistically shorten it.
+
+
+If the hair is very short, shape it naturally.
+
+
+Avoid wigs or artificial textures.
+
+
+Blend the haircut naturally with the scalp.
+
+
+BACKGROUND CHANGE:
+
+
+Replace the background with a neutral light gray studio background.
+
+
+Keep realistic studio lighting.
+
+
+Do not blur the person excessively.
+
+
+Keep natural shadows around the head and shoulders.
+
+
+SUBTLE PHOTO ENHANCEMENT:
+
+
+Slightly improve sharpness and clarity.
+
+
+Slightly improve lighting and contrast.
+
+
+Keep skin texture natural (no plastic skin).
+
+
+Keep the result realistic and natural.
+
+
+The final image must look like the same person after a real haircut in a professional studio photo.
 `
 
     const imageUrl = await generateHaircut(prompt, imageDataUri, apiKey)
