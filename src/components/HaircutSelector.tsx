@@ -46,8 +46,6 @@ export default function HaircutSelector({
     setSelectedHaircut(newHaircut)
     setSelectedBeard(newBeard)
 
-    // A MÁGICA ACONTECE AQUI:
-    // Pega o 'prompt' se existir. Se não existir, pega o 'name'.
     const haircutText = newHaircut ? (newHaircut.prompt + newHaircut.name || newHaircut.name) : null
     const beardText = newBeard ? (newBeard.prompt + newBeard.name || newBeard.name) : null
 
