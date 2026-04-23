@@ -6,43 +6,41 @@ interface Props {
   onSelect: (file: File) => void
 }
 
-// ⭐ Corrige rotação de fotos do iPhone (EXIF orientation)
-async function fixImageOrientation(file: File): Promise<File> {
+type FixedImageResult = {
+  file: File
+  preview: string
+}
+
+// ⭐ Corrige rotação + já gera preview correto
+async function fixImageOrientation(file: File): Promise<FixedImageResult> {
   return new Promise((resolve) => {
     const img = new Image()
     const reader = new FileReader()
 
     reader.onload = (e) => {
       if (!e.target?.result) {
-        resolve(file)
+        resolve({ file, preview: URL.createObjectURL(file) })
         return
       }
       img.src = e.target.result as string
     }
 
     img.onload = () => {
-      // 👇 TIPAGEM DO THIS AQUI
       EXIF.getData(img, function (this: any) {
-        const orientation = EXIF.getTag(this, "Orientation") as number | undefined
-
-        // Se não houver orientação → retorna original
-        if (!orientation || orientation === 1) {
-          resolve(file)
-          return
-        }
+        const orientation: number = EXIF.getTag(this, "Orientation") ?? 1
 
         const canvas = document.createElement("canvas")
         const ctx = canvas.getContext("2d")
 
         if (!ctx) {
-          resolve(file)
+          resolve({ file, preview: URL.createObjectURL(file) })
           return
         }
 
         const width = img.width
         const height = img.height
 
-        // Fotos giradas trocam largura/altura
+        // troca width/height se necessário
         if ([5, 6, 7, 8].includes(orientation)) {
           canvas.width = height
           canvas.height = width
@@ -56,24 +54,24 @@ async function fixImageOrientation(file: File): Promise<File> {
             ctx.rotate(Math.PI)
             ctx.drawImage(img, -width, -height)
             break
-
           case 6:
             ctx.rotate(Math.PI / 2)
             ctx.drawImage(img, 0, -height)
             break
-
           case 8:
             ctx.rotate(-Math.PI / 2)
             ctx.drawImage(img, -width, 0)
             break
-
           default:
             ctx.drawImage(img, 0, 0)
         }
 
+        // ⭐ gera preview base64 (corrige Safari)
+        const previewBase64 = canvas.toDataURL("image/jpeg", 0.9)
+
         canvas.toBlob((blob) => {
           if (!blob) {
-            resolve(file)
+            resolve({ file, preview: previewBase64 })
             return
           }
 
@@ -81,7 +79,7 @@ async function fixImageOrientation(file: File): Promise<File> {
             type: "image/jpeg",
           })
 
-          resolve(fixedFile)
+          resolve({ file: fixedFile, preview: previewBase64 })
         }, "image/jpeg", 0.95)
       })
     }
@@ -99,12 +97,11 @@ export default function UploadPhoto({ onSelect }: Props) {
     const originalFile = e.target.files?.[0]
     if (!originalFile) return
 
-    // ⭐ Corrige rotação antes do preview e upload
-    const fixedFile = await fixImageOrientation(originalFile)
+    // ⭐ agora retorna file + preview já corrigidos
+    const fixed = await fixImageOrientation(originalFile)
 
-    const url = URL.createObjectURL(fixedFile)
-    setPreview(url)
-    onSelect(fixedFile)
+    setPreview(fixed.preview)
+    onSelect(fixed.file)
   }
 
   return (
@@ -113,7 +110,6 @@ export default function UploadPhoto({ onSelect }: Props) {
 
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
 
-        {/* CAMERA */}
         <input
           ref={cameraRef}
           type="file"
@@ -123,7 +119,6 @@ export default function UploadPhoto({ onSelect }: Props) {
           onChange={handleSelectImage}
         />
 
-        {/* GALERIA */}
         <input
           ref={fileRef}
           type="file"
@@ -149,14 +144,14 @@ export default function UploadPhoto({ onSelect }: Props) {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => cameraRef.current?.click()}
-                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
+                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition"
               >
                 Tirar foto
               </button>
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition cursor-pointer"
+                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition"
               >
                 Escolher imagem
               </button>
@@ -176,14 +171,14 @@ export default function UploadPhoto({ onSelect }: Props) {
         <div className="flex gap-3 mt-4">
           <button
             onClick={() => cameraRef.current?.click()}
-            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
+            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition"
           >
             Tirar outra foto
           </button>
 
           <button
             onClick={() => fileRef.current?.click()}
-            className="px-6 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition cursor-pointer"
+            className="px-6 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition"
           >
             Escolher outra imagem
           </button>
