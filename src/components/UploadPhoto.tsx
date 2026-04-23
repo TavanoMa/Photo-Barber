@@ -1,6 +1,5 @@
 "use client"
 import { useRef, useState } from "react"
-import EXIF from "exif-js"
 
 interface Props {
   onSelect: (file: File) => void
@@ -11,72 +10,48 @@ type FixedImageResult = {
   preview: string
 }
 
-// ⭐ Corrige rotação + já gera preview correto
-async function fixImageOrientation(file: File): Promise<FixedImageResult> {
-  return new Promise((resolve) => {
+// ⭐ Não precisamos mais do EXIF. O navegador moderno já auto-rotaciona.
+// O Canvas apenas "achata" a imagem para limpar o EXIF e enviar pro backend em pé.
+async function flattenImage(file: File): Promise<FixedImageResult> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
 
-    // ⭐ ler EXIF diretamente do FILE (não do img!)
-    EXIF.getData(file as any, function (this: any) {
+    img.onload = () => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
 
-  const orientation: number = EXIF.getTag(this, "Orientation") || 1
-
-  const reader = new FileReader()
-  const img = new Image()
-
-  reader.onload = (e) => {
-    img.src = e.target?.result as string
-  }
-
-  img.onload = () => {
-    const canvas = document.createElement("canvas")
-    const ctx = canvas.getContext("2d")
-
-    if (!ctx) {
-      resolve({ file, preview: URL.createObjectURL(file) })
-      return
-    }
-
-    const width = img.width
-    const height = img.height
-
-    if ([5, 6, 7, 8].includes(orientation)) {
-      canvas.width = height
-      canvas.height = width
-    } else {
-      canvas.width = width
-      canvas.height = height
-    }
-
-    switch (orientation) {
-      case 2: ctx.transform(-1, 0, 0, 1, width, 0); break
-      case 3: ctx.transform(-1, 0, 0, -1, width, height); break
-      case 4: ctx.transform(1, 0, 0, -1, 0, height); break
-      case 5: ctx.transform(0, 1, 1, 0, 0, 0); break
-      case 6: ctx.transform(0, 1, -1, 0, height, 0); break
-      case 7: ctx.transform(0, -1, -1, 0, height, width); break
-      case 8: ctx.transform(0, -1, 1, 0, 0, width); break
-    }
-
-    ctx.drawImage(img, 0, 0)
-
-    const previewBase64 = canvas.toDataURL("image/jpeg", 0.9)
-
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        resolve({ file, preview: previewBase64 })
+      if (!ctx) {
+        resolve({ file, preview: url })
         return
       }
 
-      const fixedFile = new File([blob], file.name, {
-        type: "image/jpeg",
-      })
+      // Pega as dimensões reais da imagem (o navegador já inverteu width/height se precisava)
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
 
-      resolve({ file: fixedFile, preview: previewBase64 })
-    }, "image/jpeg", 0.95)
-  }
+      // Desenha a imagem na posição correta
+      ctx.drawImage(img, 0, 0)
 
-  reader.readAsDataURL(file)
-})
+      const previewBase64 = canvas.toDataURL("image/jpeg", 0.9)
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          resolve({ file, preview: previewBase64 })
+          return
+        }
+
+        const fixedFile = new File([blob], file.name, {
+          type: "image/jpeg",
+        })
+
+        URL.revokeObjectURL(url) // Libera memória
+        resolve({ file: fixedFile, preview: previewBase64 })
+      }, "image/jpeg", 0.95)
+    }
+
+    img.onerror = () => reject(new Error("Erro ao carregar a imagem"))
+    img.src = url
   })
 }
 
@@ -89,8 +64,8 @@ export default function UploadPhoto({ onSelect }: Props) {
     const originalFile = e.target.files?.[0]
     if (!originalFile) return
 
-    // ⭐ agora retorna file + preview já corrigidos
-    const fixed = await fixImageOrientation(originalFile)
+    // ⭐ Passamos pelo processo de "achatar" a imagem
+    const fixed = await flattenImage(originalFile)
 
     setPreview(fixed.preview)
     onSelect(fixed.file)
@@ -101,12 +76,11 @@ export default function UploadPhoto({ onSelect }: Props) {
       <p className="mb-4 text-white/80">Sua foto</p>
 
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
-
         <input
           ref={cameraRef}
           type="file"
           accept="image/*"
-          capture="user"
+          capture="environment" // Muda para 'user' se quiser focar na câmera frontal por padrão
           className="hidden"
           onChange={handleSelectImage}
         />
@@ -125,9 +99,7 @@ export default function UploadPhoto({ onSelect }: Props) {
               📸
             </div>
 
-            <h3 className="text-lg font-semibold mb-2">
-              Envie sua foto
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Envie sua foto</h3>
 
             <p className="text-white/60 text-sm mb-6 max-w-xs">
               Use uma foto frontal com boa iluminação para melhores resultados
@@ -136,14 +108,14 @@ export default function UploadPhoto({ onSelect }: Props) {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => cameraRef.current?.click()}
-                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition"
+                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
               >
                 Tirar foto
               </button>
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition"
+                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition cursor-pointer"
               >
                 Escolher imagem
               </button>
@@ -155,6 +127,7 @@ export default function UploadPhoto({ onSelect }: Props) {
           <img
             src={preview}
             className="absolute inset-0 w-full h-full object-contain bg-black"
+            alt="Preview"
           />
         )}
       </div>
@@ -163,16 +136,16 @@ export default function UploadPhoto({ onSelect }: Props) {
         <div className="flex gap-3 mt-4">
           <button
             onClick={() => cameraRef.current?.click()}
-            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition"
+            className="flex-1 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer text-sm font-medium"
           >
-            Tirar outra foto
+            Tirar outra
           </button>
 
           <button
             onClick={() => fileRef.current?.click()}
-            className="px-6 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition"
+            className="flex-1 px-4 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition cursor-pointer text-sm font-medium"
           >
-            Escolher outra imagem
+            Escolher outra
           </button>
         </div>
       )}
