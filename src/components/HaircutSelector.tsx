@@ -1,79 +1,113 @@
 "use client"
 import { useState } from "react"
-import haircutsData from "@/src/data/haircuts.json" 
+import haircutsData from "@/src/data/haircuts.json"
 
 interface Props {
-  onGenerate: () => void
-  onSelectHaircut: (promptText: string) => void
-  loading: boolean
+  onGenerate: (prompts: string) => void; // 🔥 Agora recebe a string diretamente
+  loading: boolean;
 }
-
 const fallbackImage =
   "https://cdn.leroymerlin.com.br/products/papel_de_parede_liso_preto_com_glitter_1567181465_30e0_300x300.jpg"
 
-// Criando uma tipagem para facilitar
 type ItemType = {
   id: string
   name: string
   category: string
   image: string
-  prompt?: string // Opcional, porque alguns podem não ter
+  prompt?: string
+}
+
+type Combination = {
+  haircut: ItemType
+  beard?: ItemType | null
 }
 
 export default function HaircutSelector({
   onGenerate,
-  onSelectHaircut,
   loading,
 }: Props) {
-  // Agora guardamos o objeto inteiro no estado, e não só o nome
-  const [selectedHaircut, setSelectedHaircut] = useState<ItemType | null>(null)
-  const [selectedBeard, setSelectedBeard] = useState<ItemType | null>(null)
-  
-  const [activeFilter, setActiveFilter] = useState<string>("Curto")
 
+  // seleção atual
+  const [currentHaircut, setCurrentHaircut] = useState<ItemType | null>(null)
+  const [currentBeard, setCurrentBeard] = useState<ItemType | null>(null)
+
+  // lista de comparações
+  const [combinations, setCombinations] = useState<Combination[]>([])
+
+  const [activeFilter, setActiveFilter] = useState<string>("Curto")
   const categories = ["Curto", "Médio", "Grande", "Barba"]
 
   function handleSelect(item: ItemType) {
-    let newHaircut = selectedHaircut
-    let newBeard = selectedBeard
-
     if (item.category === "Barba") {
-      newBeard = selectedBeard?.id === item.id ? null : item
+      setCurrentBeard(prev => prev?.id === item.id ? null : item)
     } else {
-      newHaircut = selectedHaircut?.id === item.id ? null : item
+      setCurrentHaircut(prev => prev?.id === item.id ? null : item)
     }
+  }
 
-    setSelectedHaircut(newHaircut)
-    setSelectedBeard(newBeard)
+  // adiciona combinação para comparar
+  function addCombination() {
+    if (!currentHaircut) return
 
-    const haircutText = newHaircut ? (newHaircut.prompt + newHaircut.name || newHaircut.name) : null
-    const beardText = newBeard ? (newBeard.prompt + newBeard.name || newBeard.name) : null
+    const exists = combinations.find(
+      c => c.haircut.id === currentHaircut.id && c.beard?.id === currentBeard?.id
+    )
+    if (exists) return
 
-    // Junta as descrições pro backend
-    const combination = [haircutText, beardText].filter(Boolean).join(" and ")
-    
-    onSelectHaircut(combination) 
+    setCombinations(prev => [
+      ...prev,
+      { haircut: currentHaircut, beard: currentBeard }
+    ])
+  }
+
+  // gerar prompts finais
+  // gerar prompts finais
+  function handleGenerateAll() {
+    if (combinations.length === 0) return
+
+    // 1. Definimos modificadores globais para garantir qualidade
+    const prefix = "Professional photo of a man with "
+    const suffix = ", highly detailed, hyper-realistic, barber shop lighting, 8k resolution"
+
+    const prompts = combinations.map(c => {
+      // 2. Prioriza o prompt técnico do JSON
+      const haircutDescription = c.haircut.prompt || c.haircut.name
+      
+      let finalItemPrompt = `${prefix}${haircutDescription}`
+
+      // 3. Se tiver barba, adiciona com um conector natural
+      if (c.beard) {
+        const beardDescription = c.beard.prompt || c.beard.name
+        finalItemPrompt += `, with ${beardDescription}`
+      }
+
+      // 4. Fecha com os modificadores de qualidade
+      return finalItemPrompt + suffix
+    })
+
+    // 🔥 Envia a string gigante separada por "|" para o backend
+    onGenerate(prompts.join("|")) 
   }
 
   const filteredHaircuts = haircutsData.filter(
-    (cut) => cut.category === activeFilter
+    cut => cut.category === activeFilter
   )
 
-  const canGenerate = selectedHaircut || selectedBeard
+  const canAddCombination = currentHaircut !== null
+  const canGenerate = combinations.length > 0
 
   return (
-    <div className="flex flex-col h-full">
+     <div className="flex flex-col h-full">
       <p className="mb-4 text-white/80 font-medium">Escolha o estilo</p>
 
-      {/* Botões de Filtro */}
       <div className="flex flex-wrap gap-2 mb-6">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveFilter(cat)}
-            className={`px-4 py-2 text-sm rounded-full border transition cursor-pointer ${
+            className={`px-4 py-2 text-sm rounded-full border transition ${
               activeFilter === cat
-                ? "bg-purple-600 border-purple-500 text-white"
+                ? "bg-primary border-primary text-white"
                 : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
             }`}
           >
@@ -82,63 +116,78 @@ export default function HaircutSelector({
         ))}
       </div>
 
-      {/* Grid de Cortes */}
-      <div className="grid grid-cols-2 gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className="grid grid-cols-2 gap-4 max-h-[350px] overflow-y-auto pr-2">
         {filteredHaircuts.map((cut) => {
-          const isSelected = selectedHaircut?.id === cut.id || selectedBeard?.id === cut.id
+          const isSelected =
+            currentHaircut?.id === cut.id || currentBeard?.id === cut.id
+
           const imageSrc = cut.image || fallbackImage
 
           return (
             <div
               key={cut.id}
-              // Passamos o objeto 'cut' inteiro agora
-              onClick={() => handleSelect(cut as ItemType)} 
+              onClick={() => handleSelect(cut as ItemType)}
               className={`relative h-40 rounded-xl overflow-hidden cursor-pointer border transition
-                ${isSelected ? "border-purple-500 ring-2 ring-purple-500/50" : "border-white/10 hover:border-purple-500/40"}
+                ${isSelected
+                  ? "border-primary ring-2 ring-primary/50"
+                  : "border-white/10 hover:border-primary/40"}
               `}
             >
               <img
                 src={imageSrc}
                 alt={cut.name}
-                className="absolute inset-0 w-full h-full object-cover bg-black"
+                className="absolute inset-0 w-full h-full object-cover"
               />
-
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-
-              <span className="absolute bottom-3 left-3 right-3 text-sm font-medium leading-tight text-white drop-shadow-md">
+              <span className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white">
                 {cut.name}
               </span>
-              
-              {isSelected && (
-                <div className="absolute top-2 right-2 bg-purple-500 rounded-full p-1 shadow-lg">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              )}
             </div>
           )
         })}
       </div>
 
-      {/* Resumo da Escolha */}
-      <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-white/50">Cabelo:</span>
-          <span className="text-white font-medium">{selectedHaircut?.name || "Nenhum"}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-white/50">Barba:</span>
-          <span className="text-white font-medium">{selectedBeard?.name || "Nenhuma"}</span>
-        </div>
+      <button
+        onClick={addCombination}
+        disabled={!canAddCombination}
+        className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40"
+      >
+         Adicionar corte e barbe para simulação
+      </button>
+
+      <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm space-y-3">
+        <p className="text-white/50">Simulações selecionadas:</p>
+
+        {combinations.length === 0 && (
+          <p className="text-white/40">Nenhuma ainda</p>
+        )}
+
+        {combinations.map((c, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 border border-white/10"
+          >
+            <div className="text-white font-medium">
+              • {c.haircut.name}
+              {c.beard && ` + ${c.beard.name}`}
+            </div>
+
+            <button
+              onClick={() => setCombinations(prev => prev.filter((_, index) => index !== i))}
+              className="text-white/40 hover:text-red-400 transition text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
 
       <button
-        onClick={onGenerate}
+        onClick={handleGenerateAll}
         disabled={loading || !canGenerate}
-        className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50"
       >
-        {loading ? "Gerando..." : "✨ Gerar simulação"}
+        {loading ? "Gerando..." : "✨ Gerar simulações"}
       </button>
 
       <p className="text-xs text-white/40 mt-3 text-center">

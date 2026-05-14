@@ -1,79 +1,54 @@
+import ThemePicker from "./ThemePicker"
+
 export default function HowItWorks() {
   return (
-    <section className="w-full bg-[#07070c] px-6 pt-14 pb-16">
-      <div className="max-w-6xl mx-auto text-center w-full">
+    <section className="px-6 pt-24 pb-8">
+      <div className="max-w-6xl mx-auto">
         
-        {/* title */}
-        <h2 className="text-4xl font-bold text-white mb-4">
-          Como <span className="text-purple-400">funciona</span>
-        </h2>
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+            Simulador de Cortes
+          </h1>
+          <p className="text-white/60 max-w-2xl mx-auto text-lg">
+            Veja como seu cliente vai ficar antes mesmo de pegar a tesoura. É simples e rápido.
+          </p>
+         
+        </div>
 
-        <p className="text-white/60 mb-16">
-          Três passos simples para visualizar seu novo visual.
-        </p>
+        <div className="relative">
+          {/* linha conectiva agora usa tema */}
+          <div className="hidden md:block absolute top-6 left-[10%] right-[10%] h-[2px] opacity-40 gradient-primary -z-10" />
 
-        {/* cards */}
-        <div className="grid md:grid-cols-3 gap-8">
-          
-          {/* card 1 */}
-          <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.02]">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 text-purple-400 text-xl">
-              📷
-            </div>
-
-            <p className="text-purple-400 text-xs tracking-widest mb-2">
-              PASSO 01
-            </p>
-
-            <h3 className="text-white text-lg font-semibold mb-3">
-              Envie sua foto
-            </h3>
-
-            <p className="text-white/60 text-sm">
-              Tire uma selfie ou envie uma foto do seu rosto de frente.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
+            <Step number="1" title="📸 Envie as fotos" description="Tire uma foto de frente e outra de perfil do cliente com boa iluminação."/>
+            <Step number="2" title="✂️ Escolha o estilo" description="Navegue pelo catálogo e adicione cortes e barbas para testar."/>
+            <Step number="3" title="✨ Veja a mágica" description="Nossa IA gera prévias hiper-realistas para o cliente aprovar na hora."/>
           </div>
-
-          {/* card 2 */}
-          <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.02]">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 text-purple-400 text-xl">
-              ✂️
-            </div>
-
-            <p className="text-purple-400 text-xs tracking-widest mb-2">
-              PASSO 02
-            </p>
-
-            <h3 className="text-white text-lg font-semibold mb-3">
-              Escolha um corte
-            </h3>
-
-            <p className="text-white/60 text-sm">
-              Navegue por dezenas de estilos e selecione o que mais combina com você.
-            </p>
-          </div>
-
-          {/* card 3 */}
-          <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.02]">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 text-purple-400 text-xl">
-              🖼️
-            </div>
-
-            <p className="text-purple-400 text-xs tracking-widest mb-2">
-              PASSO 03
-            </p>
-
-            <h3 className="text-white text-lg font-semibold mb-3">
-              Receba as simulações
-            </h3>
-
-            <p className="text-white/60 text-sm">
-              A IA gera imagens realistas mostrando como você ficaria com o corte escolhido.
-            </p>
-          </div>
-
         </div>
       </div>
     </section>
-  );
+  )
+}
+
+function Step({
+  number,
+  title,
+  description,
+}: {
+  number: string
+  title: string
+  description: string
+}) {
+  return (
+     <div className="flex flex-col items-center text-center group">
+      <div className="w-12 h-12 rounded-full bg-[#07070c] border-2 border-primary/40 text-primary font-bold flex items-center justify-center text-lg mb-4 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] transition-all duration-300">
+        {number}
+      </div>
+      
+      <h3 className="text-lg font-semibold mb-2 text-white/90">{title}</h3>
+      <p className="text-sm text-white/50 leading-relaxed max-w-[250px]">
+        {description}
+      </p>
+    </div>
+  )
 }

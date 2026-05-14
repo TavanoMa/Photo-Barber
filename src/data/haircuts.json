@@ -3,185 +3,105 @@
     "id": "buzz-cut",
     "name": "Raspado (Buzz Cut)",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "extremely short buzz cut, uniformly shaved with clippers, scalp visible, clean hairline, military style, very short hair"
   },
   {
-    "id": "low-fade",
+    "id": "low-fade-short",
     "name": "Degradê Baixo (Low Fade)",
     "category": "Curto",
     "image": "",
-    "prompt": "low-fade with a low hair"
+    "prompt": "low skin fade haircut, hair tapering very low near the ears and nape, short neat hair on top, sharp professional hairline"
   },
   {
-    "id": "mid-fade",
+    "id": "mid-fade-short",
     "name": "Degradê Médio (Mid Fade)",
     "category": "Curto",
     "image": "",
-    "prompt": "mid-fade with a low hair"
+    "prompt": "mid skin fade haircut, smooth gradient starting at temple level, short clipper-cut top, clean barber finish"
   },
   {
-    "id": "high-fade",
+    "id": "high-fade-short",
     "name": "Degradê Alto (High Fade)",
     "category": "Curto",
     "image": "",
-    "prompt": "high-fade with a low hair"
+    "prompt": "high skin fade, sides and back shaved high up to the crown, very short textured hair on top, disconnected look"
   },
   {
     "id": "taper-fade",
     "name": "Americano (Taper Fade)",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "taper fade haircut, subtle fade only at sideburns and neckline, natural hair length on sides, clean edges, professional look"
   },
   {
     "id": "cesar-cut",
     "name": "Corte César",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "caesar haircut, short horizontal fringe, blunt cut bangs, textured short top, low fade on sides"
   },
   {
     "id": "short-curly-fade",
     "name": "Cacho Curto com Degradê",
     "category": "Curto",
-    "image": ""
+    "image": "",
+    "prompt": "short curly hair on top, defined curls, low drop fade on sides, clean perimeter, natural texture"
   },
   {
     "id": "short-military-coily",
     "name": "Crespo Curto (Militar)",
     "category": "Curto",
-    "image": ""
-  },
-  {
-    "id": "modern-quiff",
-    "name": "Topete Moderno (Quiff)",
-    "category": "Médio",
-    "image": ""
-  },
-  {
-    "id": "medium-defined-curly",
-    "name": "Cacheado Médio Definido",
-    "category": "Médio",
-    "image": ""
-  },
-  {
-    "id": "medium-coily-nudred",
-    "name": "Crespo Médio com Nudred",
-    "category": "Médio",
-    "image": ""
+    "image": "",
+    "prompt": "short coily afro hair, high and tight military style, clean tapered sides, crisp line-up, 360 waves texture"
   },
   {
     "id": "burst-fade",
     "name": "Moicano Disfarçado (Burst Fade)",
     "category": "Médio",
-    "image": ""
-  },
-    {
-    "id": "low-fade",
-    "name": "Degradê Baixo (Low Fade)",
-    "category": "Médio",
     "image": "",
-    "prompt": "low-fade with a medium hair"
-  },
-  {
-    "id": "mid-fade",
-    "name": "Degradê Médio (Mid Fade)",
-    "category": "Médio",
-    "image": "",
-    "prompt": "mid-fade with a medium hair"
-  },
-  {
-    "id": "high-fade",
-    "name": "Degradê Alto (High Fade)",
-    "category": "Médio",
-    "image": "",
-    "prompt": "high-fade with a medium hair"
+    "prompt": "burst fade haircut, circular fade around the ears, mohawk silhouette, textured medium length hair on top and back"
   },
   {
     "id": "modern-mullet",
     "name": "Mullet Moderno",
     "category": "Médio",
-    "image": ""
-  },
-  {
-    "id": "textured-cut",
-    "name": "Corte Texturizado",
-    "category": "Médio",
-    "image": ""
+    "image": "",
+    "prompt": "modern mullet haircut, short textured sides, messy medium top, significantly longer hair at the nape and back"
   },
   {
     "id": "black-power",
     "name": "Black Power (Crespo Grande)",
     "category": "Grande",
-    "image": ""
-  },
-  {
-    "id": "long-natural-curly",
-    "name": "Cachos Longos Naturais",
-    "category": "Grande",
-    "image": ""
-  },
-  {
-    "id": "nago-box-braids",
-    "name": "Tranças Nagô / Box Braids",
-    "category": "Grande",
-    "image": ""
+    "image": "",
+    "prompt": "large voluminous black power afro, spherical shape, dense coily texture, natural high volume hair"
   },
   {
     "id": "man-bun-samurai",
     "name": "Coque Samurai",
     "category": "Grande",
-    "image": ""
-  },
-   {
-    "id": "low-fade",
-    "name": "Degradê Baixo (Low Fade)",
-    "category": "Grande",
     "image": "",
-    "prompt": "low-fade with a big hair"
-  },
-  {
-    "id": "mid-fade",
-    "name": "Degradê Médio (Mid Fade)",
-    "category": "Grande",
-    "image": "",
-    "prompt": "mid-fade with a big hair"
-
-  },
-  {
-    "id": "high-fade",
-    "name": "Degradê Alto (High Fade)",
-    "category": "Grande",
-    "image": "",
-    "prompt": "high-fade with a big hair"
-  },
-  {
-    "id": "long-surfer",
-    "name": "Surfista Longo",
-    "category": "Grande",
-    "image": ""
-  },
-  {
-    "id": "dreadlocks",
-    "name": "Dreadlocks",
-    "category": "Grande",
-    "image": ""
+    "prompt": "man bun samurai style, long hair tied in a top knot, undercut sides for contrast, clean shaved nape"
   },
   {
     "id": "barbacheia",
     "name": "Barba Cheia",
     "category": "Barba",
-    "image": ""
+    "image": "",
+    "prompt": ""
   },
   {
     "id": "bigode",
     "name": "Bigode",
     "category": "Barba",
-    "image": ""
+    "image": "",
+    "prompt": ""
   },
   {
     "id": "cavanhaque",
     "name": "Cavanhaque",
     "category": "Barba",
     "image": "",
-    "prompt": "goatee beard, facial hair on chin and mustache only"
+    "prompt": "goatee beard, facial hair on chin and mustache connected, clean-shaven cheeks, sharp edges"
   }
 ]

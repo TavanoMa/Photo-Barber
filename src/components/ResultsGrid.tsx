@@ -1,94 +1,139 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface Props {
-  result: string | null
+  results: string[] | null
+  loading: boolean
+  logoUrl: string // Nova prop
 }
 
-export default function ResultsGrid({ result }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function ResultsGrid({ results, loading, logoUrl }: Props) {
+  const [watermarkedResults, setWatermarkedResults] = useState<string[] | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [timer, setTimer] = useState(40)
 
-  function downloadImage() {
-    if (!result) return
+  // Função mágica para aplicar a marca d'água
+  async function applyWatermark(imageSrc: string, logoSrc: string): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const logo = new Image()
+      img.crossOrigin = "anonymous"
+      logo.crossOrigin = "anonymous"
 
+      img.src = imageSrc
+      img.onload = () => {
+        logo.src = logoSrc
+        logo.onload = () => {
+          const canvas = document.createElement("canvas")
+          const ctx = canvas.getContext("2d")
+          if (!ctx) return resolve(imageSrc)
+
+          // Ajusta tamanho do canvas para a imagem da IA
+          canvas.width = img.width
+          canvas.height = img.height
+
+          // Desenha a foto principal
+          ctx.drawImage(img, 0, 0)
+
+          // Configura a logo (ex: 20% da largura da foto)
+          const logoWidth = img.width * 0.20
+          const ratio = logo.width / logo.height
+          const logoHeight = logoWidth / ratio
+
+          // Posição: Canto inferior direito (margem de 40px)
+          const x = img.width - logoWidth - 40
+          const y = img.height - logoHeight - 40
+
+          // Aplica um pouco de transparência se quiser (0.8 = 80% opaco)
+          ctx.globalAlpha = 0.8
+          ctx.drawImage(logo, x, y, logoWidth, logoHeight)
+
+          resolve(canvas.toDataURL("image/jpeg", 0.9))
+        }
+        logo.onerror = () => resolve(imageSrc) // Se der erro na logo, retorna a imagem limpa
+      }
+      img.onerror = () => resolve(imageSrc)
+    })
+  }
+
+  // Sempre que chegarem novos resultados, aplica a marca d'água
+  useEffect(() => {
+    if (results && results.length > 0) {
+      const processImages = async () => {
+        const processed = await Promise.all(
+          results.map(url => applyWatermark(url, logoUrl))
+        )
+        setWatermarkedResults(processed)
+      }
+      processImages()
+    } else {
+      setWatermarkedResults(null)
+    }
+  }, [results, logoUrl])
+
+  // Timer (Mantido da sua versão anterior)
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (loading && timer > 0) {
+      interval = setInterval(() => setTimer(prev => prev - 1), 1000)
+    } else if (!loading) {
+      setTimer(40)
+    }
+    return () => clearInterval(interval)
+  }, [loading, timer])
+
+  function downloadImage(url: string) {
     const link = document.createElement("a")
-    link.href = result
-    link.download = "foto-com-famoso.jpg"
+    link.href = url
+    link.download = "simulacao-barbearia.jpg"
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
+  if (!loading && !watermarkedResults) return null
+
   return (
-    <section className="px-6 pb-24">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Seu resultado <span className="text-pink-400">aparecerá aqui</span>
-        </h2>
-
-        {!result ? (
-          <div className="h-96 rounded-2xl border border-white/10 bg-white/[0.02] animate-pulse" />
-        ) : (
-          <div className="flex flex-col items-center gap-6">
-            
-            {/* CARD DA IMAGEM */}
-            <div 
-              className="relative group cursor-zoom-in"
-              onClick={() => setIsOpen(true)}
-            >
-              <img 
-                src={result} 
-                className="rounded-2xl max-h-[520px] border border-white/10 shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]" 
-                alt="Resultado da simulação"
-              />
-
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
-                <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm border border-white/20">
-                  Clique para ampliar 🔍
-                </span>
-              </div>
-            </div>
-
-            {/* BOTÕES */}
-            <div className="flex gap-4">
-              <button
-                onClick={downloadImage}
-                className="px-6 py-3 rounded-xl bg-pink-500 hover:bg-pink-600 transition font-semibold"
-              >
-                Baixar imagem
-              </button>
-
-              <button
-                onClick={() => setIsOpen(true)}
-                className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 transition"
-              >
-                Visualizar grande
-              </button>
-            </div>
-
+    <section className="px-6 pb-24 mt-8">
+      <div className="max-w-6xl mx-auto">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 border-4 border-white/5 border-t-primary rounded-full animate-spin mb-6"></div>
+            <h3 className="text-2xl font-bold">Gerando sua arte...</h3>
+            <p className="text-primary font-mono text-lg">
+              {timer > 0 ? `00:${timer.toString().padStart(2, '0')}` : "Quase pronto..."}
+            </p>
           </div>
+        ) : (
+          <>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold mb-2">Seus resultados</h2>
+              <p className="text-white/60">Imagens com a marca da sua barbearia prontas para compartilhar.</p>
+            </div>
+
+            <div className={`grid gap-6 ${watermarkedResults?.length === 1 ? "max-w-sm mx-auto" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+              {watermarkedResults?.map((img, i) => (
+                <div key={i} className="group animate-in fade-in zoom-in duration-500">
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/5 aspect-[3/4] cursor-pointer" onClick={() => setSelectedImage(img)}>
+                    <img src={img} alt="Resultado" className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                  </div>
+                  <button
+                    onClick={() => downloadImage(img)}
+                    className="w-full mt-3 py-3 rounded-xl bg-primary text-white hover:opacity-90 transition-colors text-sm font-bold"
+                  >
+                    Baixar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* LIGHTBOX */}
-      {isOpen && result && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300"
-          onClick={() => setIsOpen(false)}
-        >
-          <button 
-            className="absolute top-6 right-6 text-white text-4xl hover:text-pink-400 transition-colors"
-            onClick={() => setIsOpen(false)}
-          >
-            &times;
-          </button>
-          
-          <img 
-            src={result} 
-            className="max-w-full max-h-full rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
-            alt="Resultado ampliado"
-          />
+      {selectedImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 p-4 backdrop-blur-md" onClick={() => setSelectedImage(null)}>
+          <img src={selectedImage} alt="Full size" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
         </div>
       )}
     </section>

@@ -1,2 +1,27 @@
 @import "tailwindcss";
 
+:root {
+  --primary: 139 92 246;
+  --secondary: 236 72 153;
+}
+
+/* suporte opacity */
+.bg-primary { background-color: rgb(var(--primary) / var(--tw-bg-opacity, 1)); }
+.bg-secondary { background-color: rgb(var(--secondary) / var(--tw-bg-opacity, 1)); }
+
+.text-primary { color: rgb(var(--primary) / var(--tw-text-opacity, 1)); }
+
+.border-primary { border-color: rgb(var(--primary) / var(--tw-border-opacity, 1)); }
+
+.ring-primary { --tw-ring-color: rgb(var(--primary) / var(--tw-ring-opacity, 1)); }
+
+/* gradiente */
+.from-primary {
+  --tw-gradient-from: rgb(var(--primary));
+  --tw-gradient-to: rgb(var(--secondary) / 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-secondary {
+  --tw-gradient-to: rgb(var(--secondary));
+}

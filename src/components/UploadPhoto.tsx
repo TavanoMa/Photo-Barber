@@ -2,16 +2,17 @@
 import { useRef, useState } from "react"
 
 interface Props {
-  onSelect: (file: File) => void
+  onComplete: (front: File, side: File) => void
 }
+
+type Step = "front" | "side" | "done"
 
 type FixedImageResult = {
   file: File
   preview: string
 }
 
-// ⭐ Não precisamos mais do EXIF. O navegador moderno já auto-rotaciona.
-// O Canvas apenas "achata" a imagem para limpar o EXIF e enviar pro backend em pé.
+// Achata a imagem (remove EXIF / corrige rotação)
 async function flattenImage(file: File): Promise<FixedImageResult> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
@@ -26,11 +27,8 @@ async function flattenImage(file: File): Promise<FixedImageResult> {
         return
       }
 
-      // Pega as dimensões reais da imagem (o navegador já inverteu width/height se precisava)
       canvas.width = img.naturalWidth
       canvas.height = img.naturalHeight
-
-      // Desenha a imagem na posição correta
       ctx.drawImage(img, 0, 0)
 
       const previewBase64 = canvas.toDataURL("image/jpeg", 0.9)
@@ -45,7 +43,7 @@ async function flattenImage(file: File): Promise<FixedImageResult> {
           type: "image/jpeg",
         })
 
-        URL.revokeObjectURL(url) // Libera memória
+        URL.revokeObjectURL(url)
         resolve({ file: fixedFile, preview: previewBase64 })
       }, "image/jpeg", 0.95)
     }
@@ -55,97 +53,104 @@ async function flattenImage(file: File): Promise<FixedImageResult> {
   })
 }
 
-export default function UploadPhoto({ onSelect }: Props) {
+export default function UploadPhoto({ onComplete }: Props) {
   const cameraRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+
+  const [step, setStep] = useState<Step>("front")
+
+  const [frontPreview, setFrontPreview] = useState<string | null>(null)
+  const [sidePreview, setSidePreview] = useState<string | null>(null)
+
+  const [frontFile, setFrontFile] = useState<File | null>(null)
+  const [sideFile, setSideFile] = useState<File | null>(null)
+
+  const isFront = step === "front"
+  const isSide = step === "side"
+  const isDone = step === "done"
+
+  const title =
+    isFront ? "Foto de frente" :
+    isSide ? "Foto de lado" :
+    "Fotos enviadas"
+
+  const description =
+    isFront
+      ? "Olhe para frente, mantenha o rosto centralizado e boa iluminação."
+      : isSide
+      ? "Vire levemente a cabeça para mostrar a lateral e o degradê."
+      : "Perfeito! Agora vamos gerar seus cortes."
 
   async function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
     const originalFile = e.target.files?.[0]
     if (!originalFile) return
 
-    // ⭐ Passamos pelo processo de "achatar" a imagem
     const fixed = await flattenImage(originalFile)
 
-    setPreview(fixed.preview)
-    onSelect(fixed.file)
+    // PRIMEIRA FOTO → FRONTAL
+    if (step === "front") {
+      setFrontPreview(fixed.preview)
+      setFrontFile(fixed.file)
+      setStep("side")
+      return
+    }
+
+    // SEGUNDA FOTO → LATERAL
+    if (step === "side") {
+      setSidePreview(fixed.preview)
+      setSideFile(fixed.file)
+      setStep("done")
+
+      // envia as duas para o componente pai
+      onComplete(frontFile!, fixed.file)
+    }
   }
 
   return (
     <div>
-      <p className="mb-4 text-white/80">Sua foto</p>
+      <p className="mb-4 text-white/80">Envie duas fotos</p>
 
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
-        <input
-          ref={cameraRef}
-          type="file"
-          accept="image/*"
-          capture="environment" // Muda para 'user' se quiser focar na câmera frontal por padrão
-          className="hidden"
-          onChange={handleSelectImage}
-        />
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleSelectImage}
-        />
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSelectImage}/>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleSelectImage}/>
 
-        {!preview && (
+        {!isDone && !frontPreview && !sidePreview && (
           <>
-            <div className="w-16 h-16 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl text-purple-400 mb-6">
+            <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary mb-6">
               📸
             </div>
 
-            <h3 className="text-lg font-semibold mb-2">Envie sua foto</h3>
+            <h3 className="text-lg font-semibold mb-2">Envie as fotos</h3>
 
             <p className="text-white/60 text-sm mb-6 max-w-xs">
-              Use uma foto frontal com boa iluminação para melhores resultados
+              Tire uma foto de frente e outra de lado com boa iluminação.
             </p>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => cameraRef.current?.click()}
-                className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer"
-              >
-                Tirar foto
-              </button>
-
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="px-6 py-3 rounded-lg border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition cursor-pointer"
-              >
-                Escolher imagem
-              </button>
-            </div>
           </>
         )}
 
-        {preview && (
-          <img
-            src={preview}
-            className="absolute inset-0 w-full h-full object-contain bg-black"
-            alt="Preview"
-          />
+        {isDone && (
+          <div className="grid grid-cols-2 gap-4 w-full h-full p-4">
+            <img src={frontPreview!} className="w-full h-full object-contain bg-black rounded-xl"/>
+            <img src={sidePreview!} className="w-full h-full object-contain bg-black rounded-xl"/>
+          </div>
         )}
       </div>
 
-      {preview && (
+      {!isDone && (
         <div className="flex gap-3 mt-4">
           <button
             onClick={() => cameraRef.current?.click()}
-            className="flex-1 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition cursor-pointer text-sm font-medium"
+            className="flex-1 px-6 py-3 rounded-lg bg-primary hover:opacity-90 transition cursor-pointer"
           >
-            Tirar outra
+            Tirar foto
           </button>
 
           <button
             onClick={() => fileRef.current?.click()}
-            className="flex-1 px-4 py-3 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition cursor-pointer text-sm font-medium"
+            className="flex-1 px-6 py-3 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 transition cursor-pointer"
           >
-            Escolher outra
+            Escolher imagem
           </button>
         </div>
       )}
