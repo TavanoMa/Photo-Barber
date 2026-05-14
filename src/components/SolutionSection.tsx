@@ -7,6 +7,7 @@ export default function SolutionSection() {
     "Menos retrabalho, mais clientes satisfeitos",
   ];
 
+  // a
   return (
     <section
       id="features"
