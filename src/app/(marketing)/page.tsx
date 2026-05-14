@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/lib/auth";
 import { supabaseAdmin } from "@/src/lib/supabase";
 import OnboardingGate from "@/src/components/OnboardingGate";
+import HeaderLanding from "@/src/components/HeaderLanding"
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -27,6 +28,8 @@ export default async function Home() {
 
   return (
     <>
+      <HeaderLanding
+              mode="marketing"/>
       <OnboardingGate needsOnboarding={needsOnboarding} />
 
       <HeroLanding/>
