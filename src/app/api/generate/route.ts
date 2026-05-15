@@ -98,7 +98,8 @@ Create ONE FINAL PHOTO of the SAME PERSON with the requested haircut.
 The result must look like a REAL PHOTO taken right after a real haircut.
 No AI look. No stylization.
 
-The head should be slightly turned (10–20 degrees) so the fade is visible.
+The head MUST be turned EXACTLY 20 degrees to the right — not 10, not 15, always exactly 20 degrees.
+This is fixed and non-negotiable.
 
 ━━━━━━━━━━━━━━━━━━━
 IDENTITY LOCK (ABSOLUTE)
@@ -117,16 +118,29 @@ NO makeup.
 NO "AI face".
 
 ━━━━━━━━━━━━━━━━━━━
-SCENE LOCK (CRITICAL)
+BACKGROUND LOCK (ABSOLUTE)
 ━━━━━━━━━━━━━━━━━━━
 
-Keep the ORIGINAL BACKGROUND from the FRONT photo.
+The background MUST be 100% identical to IMAGE #1.
 
-Do NOT change:
-background, lighting, shadows, camera angle,
-lens, framing, depth of field.
+DO NOT change, replace, blur, or alter:
+- background colors, walls, objects
+- lighting direction and shadows on the background
+- depth of field
+- camera framing and zoom level
 
-It must look like the SAME photo moment.
+The final photo must look like it was taken in the EXACT SAME PLACE and MOMENT as IMAGE #1.
+If anything in the background changes, the edit has FAILED.
+
+━━━━━━━━━━━━━━━━━━━
+SCENE LOCK
+━━━━━━━━━━━━━━━━━━━
+
+Keep EVERYTHING from IMAGE #1 except the hair:
+- background (absolute)
+- lighting on the person
+- camera angle and lens
+- clothing
 
 ━━━━━━━━━━━━━━━━━━━
 HAIR EDIT RULES
@@ -135,17 +149,17 @@ HAIR EDIT RULES
 You may change ONLY the hair.
 
 Allowed:
-• hair length
-• volume
-• texture
-• direction
-• density
-• fade / taper / neckline
+- hair length
+- volume
+- texture
+- direction
+- density
+- fade / taper / neckline
 
 Preserve:
-• natural hairline
-• realistic growth patterns
-• believable barber blending
+- natural hairline
+- realistic growth patterns
+- believable barber blending
 
 NO wigs  
 NO painted hair  
@@ -161,15 +175,18 @@ function buildHaircutPrompt(haircut: string) {
 REQUESTED HAIRCUT
 ━━━━━━━━━━━━━━━━━━━
 
-Simulate EXACTLY this haircut:
+Simulate EXACTLY this haircut on the person:
 
 ${haircut}
 
-This haircut OVERRIDES the current hairstyle.
+CRITICAL RULES FOR THIS EDIT:
+- This haircut COMPLETELY REPLACES the current hairstyle
+- If the style includes a fade or taper: the gradient transition MUST be clearly and realistically visible
+- If the style includes a beard or mustache: ADD the facial hair even if the person has none — this is the primary goal
+- The head should be turned slightly (20°) so the fade/sides are visible
+- Hair length and texture on top must match the description exactly — do NOT over-shave
 
-The fade and side blending MUST be clearly visible thanks to the slight head turn.
-
-Return ONLY the edited image.
+Return ONLY the final edited photo.
 `
 }
 

@@ -62,11 +62,11 @@ export default function Header(props: HeaderProps) {
           {status !== "loading" && (
             <>
               {!!session ? (
-                <LogoutButton className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 transition">
+                <LogoutButton className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 transition cursor-pointer">
                   Sair
                 </LogoutButton>
               ) : (
-                <LoginButton className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 transition">
+                <LoginButton className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 transition cursor-pointer">
                   Entrar
                 </LoginButton>
               )}

@@ -3,105 +3,91 @@
     "id": "buzz-cut",
     "name": "Raspado (Buzz Cut)",
     "category": "Curto",
-    "image": "",
-    "prompt": "extremely short buzz cut, uniformly shaved with clippers, scalp visible, clean hairline, military style, very short hair"
+    "image": "/haircuts/buzzcut.jpeg",
+    "prompt": "buzz cut using #2 clipper guard (approximately 6mm), uniform short stubble covering the entire head — NOT bald, short visible hair texture throughout, clean sharp hairline, military style"
   },
   {
     "id": "low-fade-short",
     "name": "Degradê Baixo (Low Fade)",
     "category": "Curto",
-    "image": "",
-    "prompt": "low skin fade haircut, hair tapering very low near the ears and nape, short neat hair on top, sharp professional hairline"
+    "image": "/haircuts/low-fade.png",
+    "prompt": "low skin fade: the fade starts only at the very bottom — just at the neckline and below the ears — smooth gradient from bare skin rising to short hair, the fade zone occupies only the bottom 3cm, hair on top remains full with at least 3cm of volume, crisp blending line clearly visible low on the sides"
   },
   {
     "id": "mid-fade-short",
     "name": "Degradê Médio (Mid Fade)",
     "category": "Curto",
-    "image": "",
-    "prompt": "mid skin fade haircut, smooth gradient starting at temple level, short clipper-cut top, clean barber finish"
+    "image": "/haircuts/mid-fade.png",
+    "prompt": "mid skin fade: fade begins exactly at temple and mid-ear height, smooth gradient from bare skin at the bottom transitioning upward, the blending line is visible at temple level, sides below the temple are shaved, hair on top remains full at least 3-4cm with texture and volume"
   },
   {
     "id": "high-fade-short",
     "name": "Degradê Alto (High Fade)",
     "category": "Curto",
-    "image": "",
-    "prompt": "high skin fade, sides and back shaved high up to the crown, very short textured hair on top, disconnected look"
-  },
-  {
-    "id": "taper-fade",
-    "name": "Americano (Taper Fade)",
-    "category": "Curto",
-    "image": "",
-    "prompt": "taper fade haircut, subtle fade only at sideburns and neckline, natural hair length on sides, clean edges, professional look"
+    "image": "/haircuts/high-fade.png",
+    "prompt": "high skin fade: the shaved area goes very high — almost to the top of the head — only the very top 4-5cm retains hair with visible texture and volume, strong stark contrast between the bald sides and the hair on top, sides and back are skin-level below the top zone"
   },
   {
     "id": "cesar-cut",
     "name": "Corte César",
     "category": "Curto",
-    "image": "",
-    "prompt": "caesar haircut, short horizontal fringe, blunt cut bangs, textured short top, low fade on sides"
+    "image": "/haircuts/cesar-cut.png",
+    "prompt": "caesar haircut: short blunt horizontal fringe covering the forehead, bangs cut straight across, uniform short textured top 2-3cm, low skin fade on sides"
   },
   {
     "id": "short-curly-fade",
     "name": "Cacho Curto com Degradê",
     "category": "Curto",
-    "image": "",
-    "prompt": "short curly hair on top, defined curls, low drop fade on sides, clean perimeter, natural texture"
+    "image": "/haircuts/short-curly-fade.png",
+    "prompt": "short curly hair on top with defined natural curl pattern and texture, low drop fade on sides with smooth gradient from skin upward, clean perimeter line-up, curls kept natural and round on top"
   },
   {
     "id": "short-military-coily",
-    "name": "Crespo Curto (Militar)",
+    "name": "Crespo Curto",
     "category": "Curto",
-    "image": "",
-    "prompt": "short coily afro hair, high and tight military style, clean tapered sides, crisp line-up, 360 waves texture"
+    "image": "/haircuts/short-military-coily.png",
+    "prompt": "very short coily afro hair on top, high and tight military cut, tapered sides blending cleanly into the top, crisp sharp hairline, tight visible coil texture on top"
   },
   {
     "id": "burst-fade",
     "name": "Moicano Disfarçado (Burst Fade)",
     "category": "Médio",
-    "image": "",
-    "prompt": "burst fade haircut, circular fade around the ears, mohawk silhouette, textured medium length hair on top and back"
+    "image": "/haircuts/burst-fade.png",
+    "prompt": "burst fade mohawk: a CLEARLY VISIBLE narrow strip of longer hair running from the forehead down to the nape forming a distinct mohawk ridge on top, the burst fade creates a circular arc around each ear fading to skin level, sides are almost fully shaved leaving ONLY the central mohawk strip raised and prominent, medium length textured hair on the mohawk strip"
   },
   {
     "id": "modern-mullet",
     "name": "Mullet Moderno",
     "category": "Médio",
-    "image": "",
-    "prompt": "modern mullet haircut, short textured sides, messy medium top, significantly longer hair at the nape and back"
-  },
-  {
-    "id": "black-power",
-    "name": "Black Power (Crespo Grande)",
-    "category": "Grande",
-    "image": "",
-    "prompt": "large voluminous black power afro, spherical shape, dense coily texture, natural high volume hair"
+    "image": "/haircuts/modern-mullet.png",
+    "prompt": "modern mullet: short textured sides, short top, but the back hair is SIGNIFICANTLY longer — 8 to 12cm — hanging down past the neckline, clear visual contrast between short front and long flowing back, slightly messy textured top"
   },
   {
     "id": "man-bun-samurai",
     "name": "Coque Samurai",
     "category": "Grande",
-    "image": "",
-    "prompt": "man bun samurai style, long hair tied in a top knot, undercut sides for contrast, clean shaved nape"
+    "image": "/haircuts/man-bun-samurai.png",
+    "prompt": "samurai top knot: long hair pulled up and tied into a high bun on top of the head — the bun must be clearly visible and prominent, undercut sides tightly faded to skin level, clean shaved nape and sides contrasting with the bun on top"
   },
   {
     "id": "barbacheia",
     "name": "Barba Cheia",
     "category": "Barba",
-    "image": "",
-    "prompt": ""
+    "image": "/haircuts/barbacheia.png",
+    "prompt": "ADD a thick full beard to this person: dense realistic facial hair covering the cheeks, jawline, chin and upper lip, well-groomed connecting mustache to full jaw coverage, natural neckline beard trim, highly detailed realistic beard hair texture"
   },
   {
     "id": "bigode",
     "name": "Bigode",
     "category": "Barba",
-    "image": "",
-    "prompt": ""
+    "image": "/haircuts/bigode.png",
+    "prompt": "ADD a mustache ONLY to this person: thick prominent hair growing exclusively on the upper lip area, absolutely clean-shaven chin, cheeks and jawline with NO other facial hair anywhere, the mustache must be clearly and distinctly visible — thick and well-defined above the lip only"
   },
   {
     "id": "cavanhaque",
     "name": "Cavanhaque",
     "category": "Barba",
-    "image": "",
-    "prompt": "goatee beard, facial hair on chin and mustache connected, clean-shaven cheeks, sharp edges"
+    "image": "/haircuts/cavanhaque.png",
+    "prompt": "ADD a goatee to this person: facial hair ONLY on the chin and connected mustache on the upper lip forming a circle of hair around the mouth, cheeks completely clean-shaven with zero hair, sharp defined edges on the goatee"
   }
 ]

@@ -1,41 +1,50 @@
 import { supabaseAdmin } from "@/src/lib/supabase"
 import HeaderLanding from "@/src/components/HeaderLanding"
 import GeneratePage from "./GeneratePage"
+import { notFound } from "next/navigation"
 
 interface PageProps {
   params: { slug: string }
 }
 
 export default async function Page({ params }: PageProps) {
-  const { slug } = await params // Em versões recentes do Next, params deve ser awaitado
+  // 1. Await params (Boa prática no Next.js 14/15)
+  const { slug } = await params
 
+  // 2. Busca os dados da barbearia
   const { data: barbershop, error } = await supabaseAdmin
     .from("users")
-    .select("name, email")
+    .select("barbershop_name, email") // Use o nome correto da coluna: barbershop_name
     .eq("slug", slug)
     .single()
 
-  if (!barbershop || error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        Barbearia não encontrada
-      </div>
-    )
+  // 3. Se não existir, dispara o 404 nativo do Next
+  if (error || !barbershop) {
+    return notFound()
   }
 
-  const logoUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/logos/${barbershop.email}.png`
+  // 4. Formata o e-mail para bater com o nome do arquivo salvo no bucket
+  // Deve ser EXATAMENTE a mesma lógica usada no seu route.ts
+  const safeEmail = barbershop.email.replace(/[^a-zA-Z0-9]/g, '_')
+  
+  // 5. Monta a URL pública (ajuste a extensão se necessário, ex: .png ou .jpg)
+  // Certifique-se que o bucket "logos" está público no Supabase
+  const supabaseUrl = process.env.SUPABASE_URL
+  const logoUrl = `${supabaseUrl}/storage/v1/object/public/logos/${safeEmail}.png`
 
   return (
     <div className="min-h-screen bg-[#07070c] text-white">
       <HeaderLanding
-        mode="public" // Agora o tipo bate com o Header
+        mode="public"
         barbershop={{
-          name: barbershop.name,
-          logoUrl: logoUrl, // Passando a URL já montada
+          name: barbershop.barbershop_name || "Barbearia", 
+          logoUrl: logoUrl,
         }}
       />
 
-      <GeneratePage logoUrl={logoUrl}/>
+      <main className="pt-20">
+         <GeneratePage logoUrl={logoUrl} />
+      </main>
     </div>
   )
 }

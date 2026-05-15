@@ -56,30 +56,12 @@ async function flattenImage(file: File): Promise<FixedImageResult> {
 export default function UploadPhoto({ onComplete }: Props) {
   const cameraRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-
   const [step, setStep] = useState<Step>("front")
-
   const [frontPreview, setFrontPreview] = useState<string | null>(null)
   const [sidePreview, setSidePreview] = useState<string | null>(null)
-
   const [frontFile, setFrontFile] = useState<File | null>(null)
-  const [sideFile, setSideFile] = useState<File | null>(null)
 
-  const isFront = step === "front"
-  const isSide = step === "side"
   const isDone = step === "done"
-
-  const title =
-    isFront ? "Foto de frente" :
-    isSide ? "Foto de lado" :
-    "Fotos enviadas"
-
-  const description =
-    isFront
-      ? "Olhe para frente, mantenha o rosto centralizado e boa iluminação."
-      : isSide
-      ? "Vire levemente a cabeça para mostrar a lateral e o degradê."
-      : "Perfeito! Agora vamos gerar seus cortes."
 
   async function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
     const originalFile = e.target.files?.[0]
@@ -87,70 +69,84 @@ export default function UploadPhoto({ onComplete }: Props) {
 
     const fixed = await flattenImage(originalFile)
 
-    // PRIMEIRA FOTO → FRONTAL
     if (step === "front") {
       setFrontPreview(fixed.preview)
       setFrontFile(fixed.file)
-      setStep("side")
-      return
-    }
-
-    // SEGUNDA FOTO → LATERAL
-    if (step === "side") {
+      setStep("side") // Muda para o próximo passo
+    } else if (step === "side") {
       setSidePreview(fixed.preview)
-      setSideFile(fixed.file)
       setStep("done")
-
-      // envia as duas para o componente pai
       onComplete(frontFile!, fixed.file)
     }
+    // Limpa o input para permitir selecionar a mesma imagem se necessário
+    e.target.value = ""
   }
 
   return (
     <div>
-      <p className="mb-4 text-white/80">Envie duas fotos</p>
+      <div className="flex justify-between items-end mb-4">
+        <div>
+          <p className="text-white/80 font-medium">
+            {step === "front" ? "Passo 1: Frente" : step === "side" ? "Passo 2: Lado" : "Concluído"}
+          </p>
+          <p className="text-xs text-white/40">
+            {step === "front" ? "Olhe direto para a câmera" : step === "side" ? "Vire 45 graus para o lado" : "Fotos processadas"}
+          </p>
+        </div>
+        <span className="text-xs bg-white/10 px-2 py-1 rounded-md text-white/60">
+          {step === "front" ? "1/2" : step === "side" ? "2/2" : "✓"}
+        </span>
+      </div>
 
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
-
+        
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSelectImage}/>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleSelectImage}/>
 
-        {!isDone && !frontPreview && !sidePreview && (
-          <>
-            <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary mb-6">
-              📸
-            </div>
-
-            <h3 className="text-lg font-semibold mb-2">Envie as fotos</h3>
-
+        {/* Mostra o que já foi tirado em miniatura enquanto faz a segunda */}
+        {!isDone && (
+          <div className="flex flex-col items-center">
+            {frontPreview ? (
+              <div className="relative mb-6">
+                <img src={frontPreview} className="w-32 h-32 object-cover rounded-full border-2 border-primary shadow-xl shadow-primary/20"/>
+                <div className="absolute -bottom-2 bg-primary text-[10px] px-2 py-1 rounded-full text-white uppercase font-bold">Frente OK</div>
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary mb-6">📸</div>
+            )}
+            
+            <h3 className="text-lg font-semibold mb-2">
+              {step === "front" ? "Tire a foto de frente" : "Agora a foto de lado"}
+            </h3>
             <p className="text-white/60 text-sm mb-6 max-w-xs">
-              Tire uma foto de frente e outra de lado com boa iluminação.
+              {step === "front" 
+                ? "Mantenha o rosto centralizado e boa iluminação." 
+                : "Vire levemente a cabeça para mostrar a lateral do cabelo."}
             </p>
-          </>
+          </div>
         )}
 
         {isDone && (
-          <div className="grid grid-cols-2 gap-4 w-full h-full p-4">
-            <img src={frontPreview!} className="w-full h-full object-contain bg-black rounded-xl"/>
-            <img src={sidePreview!} className="w-full h-full object-contain bg-black rounded-xl"/>
+          <div className="grid grid-cols-2 gap-4 w-full h-full p-2">
+             <div className="flex flex-col gap-2">
+                <img src={frontPreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10"/>
+                <span className="text-[10px] text-white/40 text-center uppercase">Frente</span>
+             </div>
+             <div className="flex flex-col gap-2">
+                <img src={sidePreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10"/>
+                <span className="text-[10px] text-white/40 text-center uppercase">Lado</span>
+             </div>
           </div>
         )}
       </div>
 
       {!isDone && (
         <div className="flex gap-3 mt-4">
-          <button
-            onClick={() => cameraRef.current?.click()}
-            className="flex-1 px-6 py-3 rounded-lg bg-primary hover:opacity-90 transition cursor-pointer"
-          >
-            Tirar foto
+          <button onClick={() => cameraRef.current?.click()} className="flex-1 px-6 py-4 rounded-xl bg-primary text-white font-bold hover:opacity-90 transition shadow-lg shadow-primary/20">
+            Tirar Foto
           </button>
-
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="flex-1 px-6 py-3 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 transition cursor-pointer"
-          >
-            Escolher imagem
+          <button onClick={() => fileRef.current?.click()} className="flex-1 px-6 py-4 rounded-xl border border-white/10 text-white hover:bg-white/5 transition">
+            Galeria
           </button>
         </div>
       )}

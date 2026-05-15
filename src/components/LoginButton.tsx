@@ -19,7 +19,7 @@ export default function LoginButton({ className, children = "Entrar" }: Props) {
     if (status !== "authenticated") return
 
     if (session.user.hasActiveSub && session.user.slug) {
-      router.push(`/${session.user.slug}/generate`)
+      router.push(`/${session.user.slug}`)
     }
   }, [session, status])
 

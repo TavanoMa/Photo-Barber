@@ -65,7 +65,7 @@ export default function ThemePicker({ initialPrimary, initialSecondary }: ThemeP
                 setPrimary(p.primary)
                 setSecondary(p.secondary)
               }}
-              className="relative group outline-none"
+              className="relative group outline-none cursor-pointer"
             >
               <div
                 className="w-8 h-8 rounded-full border border-white/20 shadow-lg group-hover:scale-110 group-active:scale-95 transition-all"

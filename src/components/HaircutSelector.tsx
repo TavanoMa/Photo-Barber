@@ -66,8 +66,8 @@ export default function HaircutSelector({
     if (combinations.length === 0) return
 
     // 1. Definimos modificadores globais para garantir qualidade
-    const prefix = "Professional photo of a man with "
-    const suffix = ", highly detailed, hyper-realistic, barber shop lighting, 8k resolution"
+    const prefix = "Apply this exact style to the person in the reference photo: "
+const suffix = ", keep the original face strictly identical, hyper-realistic, barber shop lighting, 8k resolution"
 
     const prompts = combinations.map(c => {
       // 2. Prioriza o prompt técnico do JSON
@@ -105,10 +105,10 @@ export default function HaircutSelector({
           <button
             key={cat}
             onClick={() => setActiveFilter(cat)}
-            className={`px-4 py-2 text-sm rounded-full border transition ${
+            className={`px-4 py-2 text-sm rounded-full border transition cursor-pointer${
               activeFilter === cat
-                ? "bg-primary border-primary text-white"
-                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
+                ? "bg-primary border-primary text-white cursor-pointer"
+                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 cursor-pointer" 
             }`}
           >
             {cat}
@@ -150,9 +150,9 @@ export default function HaircutSelector({
       <button
         onClick={addCombination}
         disabled={!canAddCombination}
-        className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40"
+        className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
       >
-         Adicionar corte e barbe para simulação
+         Adicionar corte e barba para simulação
       </button>
 
       <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm space-y-3">
@@ -185,7 +185,7 @@ export default function HaircutSelector({
       <button
         onClick={handleGenerateAll}
         disabled={loading || !canGenerate}
-        className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50"
+        className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50 cursor-pointer"
       >
         {loading ? "Gerando..." : "✨ Gerar simulações"}
       </button>
