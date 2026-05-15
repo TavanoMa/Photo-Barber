@@ -23,7 +23,7 @@ export default function ThemeSettingsButton() {
         onClick={() => setOpen(!open)}
         className="w-10 h-10 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 backdrop-blur flex items-center justify-center transition cursor-pointer"
       >
-        ⚙️
+        🎨
       </button>
 
       {/* POPOVER */}
