@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server"
+import sharp from "sharp"
 
 export const runtime = "nodejs"
+
+// Aumenta o tempo máximo da rota (Vercel Pro: até 300s, Hobby: 60s)
+export const maxDuration = 120
+
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 /* -------------------------------------------------- */
-/* TYPES */
+/* TYPES                                               */
 /* -------------------------------------------------- */
 
 interface ORImageUrl {
@@ -24,62 +29,128 @@ interface ORBody {
 }
 
 interface ORResponse {
-  choices: {
+  id?: string
+  error?: { message: string; code?: number }
+  choices?: {
     message: {
+      content?: string
       images?: { image_url?: { url: string } }[]
     }
   }[]
 }
 
 /* -------------------------------------------------- */
-/* UTILS */
+/* IMAGE UTILS                                         */
 /* -------------------------------------------------- */
 
-async function fileToDataUri(file: File) {
+const MAX_DIMENSION = 1280 // px — suficiente para análise facial
+const JPEG_QUALITY  = 85   // qualidade boa, arquivo ~600 KB
+
+/**
+ * Redimensiona e comprime a imagem usando sharp.
+ * Funciona como segunda barreira caso o cliente envie imagem grande.
+ */
+async function compressImage(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer())
-  const base64 = buffer.toString("base64")
-  return `data:${file.type || "image/jpeg"};base64,${base64}`
+
+  const compressed = await sharp(buffer)
+    .resize(MAX_DIMENSION, MAX_DIMENSION, {
+      fit: "inside",        // mantém proporção, nunca amplia
+      withoutEnlargement: true,
+    })
+    .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
+    .toBuffer()
+
+  const base64 = compressed.toString("base64")
+
+  const sizeMB = (base64.length * 0.75 / 1024 / 1024).toFixed(2)
+  console.log(`[compress] ${file.name} → ${sizeMB} MB após compressão`)
+
+  return `data:image/jpeg;base64,${base64}`
 }
+
+/* -------------------------------------------------- */
+/* OPENROUTER CALL                                     */
+/* -------------------------------------------------- */
 
 async function callOpenRouter(
   prompt: string,
   frontUri: string,
   sideUri: string,
   apiKey: string
-) {
+): Promise<string | null> {
   const body: ORBody = {
     model: "google/gemini-3-pro-image-preview",
     messages: [
       {
         role: "user",
         content: [
-          { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: frontUri } }, // foto frente
-          { type: "image_url", image_url: { url: sideUri } },  // foto lado
+          { type: "text",      text: prompt },
+          { type: "image_url", image_url: { url: frontUri } },
+          { type: "image_url", image_url: { url: sideUri  } },
         ],
       },
     ],
     modalities: ["image", "text"],
   }
 
-  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  })
+  // Timeout explícito de 90s para não travar silenciosamente
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 90_000)
+
+  let res: Response
+  try {
+    res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+        "X-Title": "Haircut Simulator",
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
+
+  // ─── Log de status HTTP ───────────────────────────
+  console.log(`[openrouter] status: ${res.status}`)
 
   const data = (await res.json()) as ORResponse
-  return data.choices?.[0]?.message?.images?.[0]?.image_url?.url || null
+
+  // ─── Log do erro da API (se houver) ──────────────
+  if (data.error) {
+    console.error("[openrouter] erro da API:", JSON.stringify(data.error))
+    return null
+  }
+
+  // ─── Log do choices completo ──────────────────────
+  if (!data.choices?.length) {
+    console.error("[openrouter] resposta sem choices:", JSON.stringify(data))
+    return null
+  }
+
+  const message = data.choices[0].message
+  console.log("[openrouter] message keys:", Object.keys(message))
+
+  const imageUrl = message.images?.[0]?.image_url?.url ?? null
+
+  if (!imageUrl) {
+    console.error(
+      "[openrouter] sem imagem no retorno. content:",
+      message.content?.slice(0, 200) // primeiros 200 chars do texto, se vier
+    )
+  }
+
+  return imageUrl
 }
 
 /* -------------------------------------------------- */
-/* PROMPTS */
+/* PROMPTS                                             */
 /* -------------------------------------------------- */
 
-// 🔒 REGRAS GLOBAIS (NUNCA MUDA)
 const BASE_PROMPT = `
 You are a PROFESSIONAL BARBER PHOTO RETOUCHER.
 
@@ -112,10 +183,7 @@ face, eyes, eyebrows, nose, mouth, ears
 skin tone, ethnicity, age, gender  
 expression, face shape, head shape
 
-NO beautification.
-NO smoothing.
-NO makeup.
-NO "AI face".
+NO beautification. NO smoothing. NO makeup. NO "AI face".
 
 ━━━━━━━━━━━━━━━━━━━
 BACKGROUND LOCK (ABSOLUTE)
@@ -128,9 +196,6 @@ DO NOT change, replace, blur, or alter:
 - lighting direction and shadows on the background
 - depth of field
 - camera framing and zoom level
-
-The final photo must look like it was taken in the EXACT SAME PLACE and MOMENT as IMAGE #1.
-If anything in the background changes, the edit has FAILED.
 
 ━━━━━━━━━━━━━━━━━━━
 SCENE LOCK
@@ -148,27 +213,12 @@ HAIR EDIT RULES
 
 You may change ONLY the hair.
 
-Allowed:
-- hair length
-- volume
-- texture
-- direction
-- density
-- fade / taper / neckline
+Allowed: hair length, volume, texture, direction, density, fade/taper/neckline  
+Preserve: natural hairline, realistic growth patterns, believable barber blending
 
-Preserve:
-- natural hairline
-- realistic growth patterns
-- believable barber blending
-
-NO wigs  
-NO painted hair  
-NO fake strands  
-NO over sharpening  
-NO beauty filters
+NO wigs. NO painted hair. NO fake strands. NO over sharpening. NO beauty filters.
 `
 
-// 🎯 PROMPT DINÂMICO (RECEBE O CORTE)
 function buildHaircutPrompt(haircut: string) {
   return `
 ━━━━━━━━━━━━━━━━━━━
@@ -181,59 +231,88 @@ ${haircut}
 
 CRITICAL RULES FOR THIS EDIT:
 - This haircut COMPLETELY REPLACES the current hairstyle
-- If the style includes a fade or taper: the gradient transition MUST be clearly and realistically visible
-- If the style includes a beard or mustache: ADD the facial hair even if the person has none — this is the primary goal
+- If the style includes a fade or taper: the gradient MUST be clearly and realistically visible
+- If the style includes a beard or mustache: ADD the facial hair even if the person has none
 - The head should be turned slightly (20°) so the fade/sides are visible
-- Hair length and texture on top must match the description exactly — do NOT over-shave
+- Hair length and texture on top must match exactly — do NOT over-shave
 
 Return ONLY the final edited photo.
 `
 }
 
 /* -------------------------------------------------- */
-/* ROUTE */
+/* ROUTE                                               */
 /* -------------------------------------------------- */
 
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.OPENROUTER_API_KEY
-    if (!apiKey)
+    if (!apiKey) {
+      console.error("[route] OPENROUTER_API_KEY não configurada")
       return NextResponse.json({ error: "API KEY não configurada" }, { status: 500 })
+    }
 
     const formData = await req.formData()
 
-    const promptsString = formData.get("haircut") as string
-    const frontFile = formData.get("frontImage") as File
-    const sideFile = formData.get("sideImage") as File
+    const promptsString = formData.get("haircut")  as string | null
+    const frontFile     = formData.get("frontImage") as File | null
+    const sideFile      = formData.get("sideImage")  as File | null
 
+    // ─── Validação detalhada ──────────────────────────
     if (!promptsString || !frontFile || !sideFile) {
-      return NextResponse.json({ error: "Dados incompletos" }, { status: 400 })
+      const missing = [
+        !promptsString && "haircut",
+        !frontFile     && "frontImage",
+        !sideFile      && "sideImage",
+      ].filter(Boolean)
+
+      console.error("[route] campos faltando:", missing)
+      return NextResponse.json(
+        { error: `Campos obrigatórios ausentes: ${missing.join(", ")}` },
+        { status: 400 }
+      )
     }
 
+    console.log(`[route] frontImage: ${frontFile.name} (${(frontFile.size / 1024).toFixed(0)} KB)`)
+    console.log(`[route] sideImage:  ${sideFile.name}  (${(sideFile.size / 1024).toFixed(0)} KB)`)
+    console.log(`[route] prompts: ${promptsString.split("|").length} corte(s)`)
+
+    // ─── Compressão de imagens (backend) ─────────────
     const [frontUri, sideUri] = await Promise.all([
-      fileToDataUri(frontFile),
-      fileToDataUri(sideFile),
+      compressImage(frontFile),
+      compressImage(sideFile),
     ])
 
-    const prompts = promptsString.split("|")
+    // ─── Chamadas paralelas ao OpenRouter ────────────
+    const prompts = promptsString.split("|").filter(Boolean)
 
-    // gera múltiplos cortes
-    const images = await Promise.all(
-      prompts.map(async (haircut) => {
+    const results = await Promise.allSettled(
+      prompts.map(async (haircut, i) => {
+        console.log(`[route] iniciando corte ${i + 1}/${prompts.length}`)
         const finalPrompt = BASE_PROMPT + buildHaircutPrompt(haircut)
-        return callOpenRouter(finalPrompt, frontUri, sideUri, apiKey)
+        const url = await callOpenRouter(finalPrompt, frontUri, sideUri, apiKey)
+        if (!url) throw new Error(`Corte ${i + 1} não retornou imagem`)
+        return url
       })
     )
 
-    const validImages = images.filter(Boolean)
+    const images  = results.filter(r => r.status === "fulfilled").map(r => (r as PromiseFulfilledResult<string>).value)
+    const failed  = results.filter(r => r.status === "rejected").length
 
-    if (!validImages.length) {
-      return NextResponse.json({ error: "Falha ao gerar imagens" }, { status: 500 })
+    console.log(`[route] geradas: ${images.length} | falhas: ${failed}`)
+
+    if (!images.length) {
+      return NextResponse.json(
+        { error: "Nenhuma imagem foi gerada. Verifique os logs do servidor." },
+        { status: 500 }
+      )
     }
 
-    return NextResponse.json({ images: validImages })
-  } catch (err) {
-    console.error("GENERATE ERROR:", err)
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 })
+    return NextResponse.json({ images, failed })
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error("[route] erro não tratado:", message)
+    return NextResponse.json({ error: `Erro interno: ${message}` }, { status: 500 })
   }
 }
