@@ -12,7 +12,6 @@ type FixedImageResult = {
   preview: string
 }
 
-// Achata a imagem (remove EXIF / corrige rotação)
 async function flattenImage(file: File): Promise<FixedImageResult> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
@@ -27,25 +26,42 @@ async function flattenImage(file: File): Promise<FixedImageResult> {
         return
       }
 
-      canvas.width = img.naturalWidth
-      canvas.height = img.naturalHeight
-      ctx.drawImage(img, 0, 0)
+      // ✅ Limita resolução — câmera gera 3000-4000px, Vercel aceita até 4.5MB
+      const MAX_SIZE = 800
+      let w = img.naturalWidth
+      let h = img.naturalHeight
 
-      const previewBase64 = canvas.toDataURL("image/jpeg", 0.9)
-
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          resolve({ file, preview: previewBase64 })
-          return
+      if (w > MAX_SIZE || h > MAX_SIZE) {
+        if (w > h) {
+          h = Math.round((h * MAX_SIZE) / w)
+          w = MAX_SIZE
+        } else {
+          w = Math.round((w * MAX_SIZE) / h)
+          h = MAX_SIZE
         }
+      }
 
-        const fixedFile = new File([blob], file.name, {
-          type: "image/jpeg",
-        })
+      canvas.width = w
+      canvas.height = h
+      ctx.drawImage(img, 0, 0, w, h)
 
-        URL.revokeObjectURL(url)
-        resolve({ file: fixedFile, preview: previewBase64 })
-      }, "image/jpeg", 0.95)
+      const previewBase64 = canvas.toDataURL("image/jpeg", 0.8)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve({ file, preview: previewBase64 })
+            return
+          }
+
+          const fixedFile = new File([blob], file.name, { type: "image/jpeg" })
+
+          URL.revokeObjectURL(url)
+          resolve({ file: fixedFile, preview: previewBase64 })
+        },
+        "image/jpeg",
+        0.75 // ✅ gera ~150-300 KB por foto, bem abaixo do limite da Vercel
+      )
     }
 
     img.onerror = () => reject(new Error("Erro ao carregar a imagem"))
@@ -72,13 +88,13 @@ export default function UploadPhoto({ onComplete }: Props) {
     if (step === "front") {
       setFrontPreview(fixed.preview)
       setFrontFile(fixed.file)
-      setStep("side") // Muda para o próximo passo
+      setStep("side")
     } else if (step === "side") {
       setSidePreview(fixed.preview)
       setStep("done")
       onComplete(frontFile!, fixed.file)
     }
-    // Limpa o input para permitir selecionar a mesma imagem se necessário
+
     e.target.value = ""
   }
 
@@ -99,28 +115,27 @@ export default function UploadPhoto({ onComplete }: Props) {
       </div>
 
       <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col items-center justify-center text-center h-[420px] relative overflow-hidden">
-        
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSelectImage}/>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleSelectImage}/>
 
-        {/* Mostra o que já foi tirado em miniatura enquanto faz a segunda */}
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSelectImage} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleSelectImage} />
+
         {!isDone && (
           <div className="flex flex-col items-center">
             {frontPreview ? (
               <div className="relative mb-6">
-                <img src={frontPreview} className="w-32 h-32 object-cover rounded-full border-2 border-primary shadow-xl shadow-primary/20"/>
+                <img src={frontPreview} className="w-32 h-32 object-cover rounded-full border-2 border-primary shadow-xl shadow-primary/20" />
                 <div className="absolute -bottom-2 bg-primary text-[10px] px-2 py-1 rounded-full text-white uppercase font-bold">Frente OK</div>
               </div>
             ) : (
               <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary mb-6">📸</div>
             )}
-            
+
             <h3 className="text-lg font-semibold mb-2">
               {step === "front" ? "Tire a foto de frente" : "Agora a foto de lado"}
             </h3>
             <p className="text-white/60 text-sm mb-6 max-w-xs">
-              {step === "front" 
-                ? "Mantenha o rosto centralizado e boa iluminação." 
+              {step === "front"
+                ? "Mantenha o rosto centralizado e boa iluminação."
                 : "Vire levemente a cabeça para mostrar a lateral do cabelo."}
             </p>
           </div>
@@ -128,14 +143,14 @@ export default function UploadPhoto({ onComplete }: Props) {
 
         {isDone && (
           <div className="grid grid-cols-2 gap-4 w-full h-full p-2">
-             <div className="flex flex-col gap-2">
-                <img src={frontPreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10"/>
-                <span className="text-[10px] text-white/40 text-center uppercase">Frente</span>
-             </div>
-             <div className="flex flex-col gap-2">
-                <img src={sidePreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10"/>
-                <span className="text-[10px] text-white/40 text-center uppercase">Lado</span>
-             </div>
+            <div className="flex flex-col gap-2">
+              <img src={frontPreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10" />
+              <span className="text-[10px] text-white/40 text-center uppercase">Frente</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <img src={sidePreview!} className="w-full h-full object-cover bg-black rounded-xl border border-white/10" />
+              <span className="text-[10px] text-white/40 text-center uppercase">Lado</span>
+            </div>
           </div>
         )}
       </div>
