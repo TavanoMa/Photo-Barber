@@ -1,7 +1,7 @@
 export const plans = {
   starter: {
     credits: 80,
-    price: 89,
+    price: 1,
     productId: process.env.ABACATE_STARTER_ID!,
   },
 
