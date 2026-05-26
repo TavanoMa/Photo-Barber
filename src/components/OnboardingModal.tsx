@@ -37,6 +37,7 @@ export default function OnboardingModal({ isOpen, onClose }: Props) {
     formData.append("barbershopName", barbershopName)
     formData.append("phone", phone)
     formData.append("city", city)
+    
     if (logo) formData.append("logo", logo)
 
     await fetch("/api/onboarding", {

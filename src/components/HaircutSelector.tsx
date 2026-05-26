@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import haircutsData from "@/src/data/haircuts.json"
+import { useEffect, } from "react"
 
 interface Props {
   onGenerate: (prompts: string) => void; // 🔥 Agora recebe a string diretamente
@@ -36,6 +37,12 @@ export default function HaircutSelector({
 
   const [activeFilter, setActiveFilter] = useState<string>("Curto")
   const categories = ["Curto", "Médio", "Grande", "Barba"]
+
+  const [credits, setCredits] = useState<number | null>(null)
+
+  const requiredCredits = combinations.length
+  const hasEnoughCredits =
+  credits !== null && credits >= requiredCredits && credits != 0
 
   function handleSelect(item: ItemType) {
     if (item.category === "Barba") {
@@ -95,6 +102,15 @@ const suffix = ", keep the original face strictly identical, hyper-realistic, ba
 
   const canAddCombination = currentHaircut !== null
   const canGenerate = combinations.length > 0
+
+  useEffect(() => {
+    if (loading ) return
+    
+  
+    fetch("/api/user/credits")
+      .then(res => res.json())
+      .then(data => setCredits(data.credits))
+  }, [loading])
 
   return (
      <div className="flex flex-col h-full">
@@ -184,10 +200,16 @@ const suffix = ", keep the original face strictly identical, hyper-realistic, ba
 
       <button
         onClick={handleGenerateAll}
-        disabled={loading || !canGenerate}
+        disabled={loading || !canGenerate || !hasEnoughCredits}
         className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50 cursor-pointer"
       >
-        {loading ? "Gerando..." : "✨ Gerar simulações"}
+        {
+  loading
+    ? "Gerando..."
+    : !hasEnoughCredits
+      ? "Seus créditos acabaram"
+      : `✨ Gerar ${requiredCredits} simulação${requiredCredits > 1 ? "ões" : ""}`
+}
       </button>
 
       <p className="text-xs text-white/40 mt-3 text-center">

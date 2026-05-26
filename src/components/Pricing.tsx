@@ -1,4 +1,31 @@
+"use client"
+
 export default function Pricing() {
+
+  
+async function subscribe(plan: string) {
+  try {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plan }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      alert(data.error)
+      return
+    }
+
+    window.location.href = data.checkoutUrl
+  } catch {
+    alert("Erro ao iniciar pagamento")
+  }
+}
+
   return (
     <section className="px-6 py-24 bg-[#07070c]" id="pricing">
       <div className="max-w-7xl mx-auto">
@@ -34,7 +61,7 @@ export default function Pricing() {
               <li>✔ Resultado em segundos</li>
             </ul>
 
-            <button className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+            <button className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition" onClick={() => subscribe("starter")}>
               Começar agora
             </button>
           </div>
@@ -59,7 +86,7 @@ export default function Pricing() {
               <li>✔ Mais vendas e menos erros</li>
             </ul>
 
-            <button className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 transition">
+            <button className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 transition" onClick={() => subscribe("growth")}>
               Assinar Growth
             </button>
           </div>
@@ -79,7 +106,7 @@ export default function Pricing() {
               <li>✔ Escale sua barbearia com IA</li>
             </ul>
 
-            <button className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+            <button className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition" onClick={() => subscribe("scale")}>
               Assinar Scale
             </button>
           </div>

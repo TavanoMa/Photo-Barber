@@ -5,6 +5,8 @@ import LogoutButton from "@/src/components/LogoutButton"
 import ThemeSettingsButton from "@/src/components/ThemeSettingsButton"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { useEffect, useState } from "react"
+import { useUser } from "../hooks/useUser"
 
 type HeaderProps =
   | { mode: "marketing" }
@@ -19,6 +21,17 @@ type HeaderProps =
 export default function Header(props: HeaderProps) {
   const { data: session, status } = useSession()
   const isPublic = props.mode === "public"
+  const [credits, setCredits] = useState<number | null>(null)
+
+  useEffect(() => {
+  if (!session) return
+
+  fetch("/api/user/credits")
+    .then(res => res.json())
+    .then(data => setCredits(data.credits))
+}, [session])
+
+const user = useUser()
 
   return (
     <header className="fixed top-0 w-full z-50 backdrop-blur border-b border-white/5 bg-[#07070c]/80">
@@ -58,6 +71,11 @@ export default function Header(props: HeaderProps) {
           
           {/* 🔥 BOTÃO CONFIGURAÇÃO (apenas no modo public) */}
           {isPublic && <ThemeSettingsButton />}
+          {isPublic && session && credits !== null && (
+  <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+    ✨ {user.credits} créditos
+  </div>
+  )}
 
           {status !== "loading" && (
             <>

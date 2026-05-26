@@ -59,6 +59,7 @@ export async function POST(req: Request) {
       phone,
       city,
       slug,
+      credits : 0,
     })
     .eq("email", userEmail)
 

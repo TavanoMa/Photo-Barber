@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import sharp from "sharp"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/src/lib/auth"
+import { supabaseAdmin } from "@/src/lib/supabase"
 
 export const runtime = "nodejs"
 
@@ -9,7 +12,7 @@ export const maxDuration = 120
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 /* -------------------------------------------------- */
-/* TYPES                                               */
+/* TYPES                                              */
 /* -------------------------------------------------- */
 
 interface ORImageUrl {
@@ -40,7 +43,7 @@ interface ORResponse {
 }
 
 /* -------------------------------------------------- */
-/* IMAGE UTILS                                         */
+/* IMAGE UTILS                                        */
 /* -------------------------------------------------- */
 
 const MAX_DIMENSION = 1280 // px — suficiente para análise facial
@@ -70,7 +73,7 @@ async function compressImage(file: File): Promise<string> {
 }
 
 /* -------------------------------------------------- */
-/* OPENROUTER CALL                                     */
+/* OPENROUTER CALL                                    */
 /* -------------------------------------------------- */
 
 async function callOpenRouter(
@@ -148,7 +151,7 @@ async function callOpenRouter(
 }
 
 /* -------------------------------------------------- */
-/* PROMPTS                                             */
+/* PROMPTS                                            */
 /* -------------------------------------------------- */
 
 const BASE_PROMPT = `
@@ -241,7 +244,7 @@ Return ONLY the final edited photo.
 }
 
 /* -------------------------------------------------- */
-/* ROUTE                                               */
+/* ROUTE                                              */
 /* -------------------------------------------------- */
 
 export async function POST(req: Request) {
@@ -252,13 +255,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "API KEY não configurada" }, { status: 500 })
     }
 
+    // ─── 1. Autenticação ────────────────────────────────
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Faça login para gerar imagens." },
+        { status: 401 }
+      )
+    }
+
+    // ─── 2. Busca do Usuário e Créditos ────────────────
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("id, credits")
+      .eq("email", session.user.email)
+      .single()
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado." },
+        { status: 404 }
+      )
+    }
+
+    // ─── 3. Validação dos Dados do Formulário ──────────
     const formData = await req.formData()
 
     const promptsString = formData.get("haircut")  as string | null
     const frontFile     = formData.get("frontImage") as File | null
     const sideFile      = formData.get("sideImage")  as File | null
 
-    // ─── Validação detalhada ──────────────────────────
     if (!promptsString || !frontFile || !sideFile) {
       const missing = [
         !promptsString && "haircut",
@@ -275,17 +301,27 @@ export async function POST(req: Request) {
 
     console.log(`[route] frontImage: ${frontFile.name} (${(frontFile.size / 1024).toFixed(0)} KB)`)
     console.log(`[route] sideImage:  ${sideFile.name}  (${(sideFile.size / 1024).toFixed(0)} KB)`)
-    console.log(`[route] prompts: ${promptsString.split("|").length} corte(s)`)
+    
+    const prompts = promptsString.split("|").filter(Boolean)
+    console.log(`[route] prompts: ${prompts.length} corte(s)`)
 
-    // ─── Compressão de imagens (backend) ─────────────
+    // ─── 4. Verificação de Créditos ────────────────────
+    const creditsNeeded = prompts.length
+
+    if (user.credits < creditsNeeded) {
+      return NextResponse.json(
+        { error: `Você possui ${user.credits} crédito(s), mas precisa de ${creditsNeeded}.` },
+        { status: 400 }
+      )
+    }
+
+    // ─── 5. Compressão de imagens (backend) ────────────
     const [frontUri, sideUri] = await Promise.all([
       compressImage(frontFile),
       compressImage(sideFile),
     ])
 
-    // ─── Chamadas paralelas ao OpenRouter ────────────
-    const prompts = promptsString.split("|").filter(Boolean)
-
+    // ─── 6. Chamadas paralelas ao OpenRouter ───────────
     const results = await Promise.allSettled(
       prompts.map(async (haircut, i) => {
         console.log(`[route] iniciando corte ${i + 1}/${prompts.length}`)
@@ -308,7 +344,20 @@ export async function POST(req: Request) {
       )
     }
 
-    return NextResponse.json({ images, failed })
+    // ─── 7. Atualização dos Créditos (pós-sucesso) ─────
+    const remainingCredits = Math.max(0, user.credits - images.length)
+
+    await supabaseAdmin
+      .from("users")
+      .update({ credits: remainingCredits })
+      .eq("id", user.id)
+
+    // ─── 8. Retorno de Sucesso ─────────────────────────
+    return NextResponse.json({
+      images,
+      failed,
+      remainingCredits,
+    })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
