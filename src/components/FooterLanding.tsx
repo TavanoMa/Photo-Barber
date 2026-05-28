@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function Footer() {
   return (
     <footer className="px-6 py-10 border-t border-white/10">
@@ -5,9 +7,24 @@ export default function Footer() {
         <span>© 2026 PhotoBarber</span>
 
         <div className="flex gap-6">
-          <span className="hover:text-white cursor-pointer">Termos</span>
-          <span className="hover:text-white cursor-pointer">Privacidade</span>
-          <span className="hover:text-white cursor-pointer">Contato</span>
+          <Link
+            href="/termos"
+            className="hover:text-white transition"
+          >
+            Termos
+          </Link>
+
+          <Link
+            href="/privacidade"
+            className="hover:text-white transition"
+          >
+            Privacidade
+          </Link>
+
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=tavanoma@gmail.com"
+          className="hover:text-white transition">
+            Contato
+          </a>
         </div>
       </div>
     </footer>

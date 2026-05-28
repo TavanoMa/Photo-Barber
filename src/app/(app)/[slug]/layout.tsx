@@ -1,6 +1,7 @@
 
 import ThemeProvider from "@/src/components/ThemeProvider"
 import { getTheme } from "@/src/actions/getTheme"
+import FooterLanding from "@/src/components/FooterLanding";
 
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "")
@@ -40,6 +41,7 @@ export default async function AppLayout({
       <ThemeProvider primary={primary} secondary={secondary} />
       
       <main className="flex-1">{children}</main>
+      <FooterLanding></FooterLanding>
     </div>
   );
 }
