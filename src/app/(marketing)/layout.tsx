@@ -1,4 +1,4 @@
-import Header from "@/src/components/HeaderLanding";
+
 import FooterLanding from "@/src/components/FooterLanding";
 
 export default function MarketingLayout({

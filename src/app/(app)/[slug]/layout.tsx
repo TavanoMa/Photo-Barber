@@ -1,5 +1,4 @@
-import Header from "@/src/components/Header";
-import Footer from "@/src/components/Footer";
+
 import ThemeProvider from "@/src/components/ThemeProvider"
 import { getTheme } from "@/src/actions/getTheme"
 
