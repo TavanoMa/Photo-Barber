@@ -1,13 +1,13 @@
 export const plans = {
   starter: {
     credits: 80,
-    price: 1,
+    price: 10,
     productId: process.env.ABACATE_STARTER_ID!,
   },
 
   growth: {
     credits: 200,
-    price: 189,
+    price: 10,
     productId: process.env.ABACATE_GROWTH_ID!,
   },
 

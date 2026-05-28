@@ -1,12 +1,14 @@
 "use client"
-import { useState } from "react"
+
+import { useEffect, useState } from "react"
 import haircutsData from "@/src/data/haircuts.json"
-import { useEffect, } from "react"
 
 interface Props {
-  onGenerate: (prompts: string) => void; // 🔥 Agora recebe a string diretamente
-  loading: boolean;
+  onGenerate: (prompts: string) => void
+  loading: boolean
+  mode?: "landing" | "premium"
 }
+
 const fallbackImage =
   "https://cdn.leroymerlin.com.br/products/papel_de_parede_liso_preto_com_glitter_1567181465_30e0_300x300.jpg"
 
@@ -26,13 +28,17 @@ type Combination = {
 export default function HaircutSelector({
   onGenerate,
   loading,
+  mode = "premium",
 }: Props) {
+  const isLanding = mode === "landing"
 
-  // seleção atual
+  // IDs permitidos na landing
+  // AJUSTE conforme os IDs reais do seu JSON
+  const landingHaircuts = ["buzz-cut", "man-bun-samurai"]
+
   const [currentHaircut, setCurrentHaircut] = useState<ItemType | null>(null)
   const [currentBeard, setCurrentBeard] = useState<ItemType | null>(null)
 
-  // lista de comparações
   const [combinations, setCombinations] = useState<Combination[]>([])
 
   const [activeFilter, setActiveFilter] = useState<string>("Curto")
@@ -40,102 +46,158 @@ export default function HaircutSelector({
 
   const [credits, setCredits] = useState<number | null>(null)
 
+  // PREMIUM
   const requiredCredits = combinations.length
+
+  // LANDING
+  const landingRequiredCredits = 1
+
   const hasEnoughCredits =
-  credits !== null && credits >= requiredCredits && credits != 0
+    credits !== null &&
+    credits >= (isLanding ? landingRequiredCredits : requiredCredits) &&
+    credits !== 0
 
   function handleSelect(item: ItemType) {
+    // Landing não permite barba
+    if (isLanding && item.category === "Barba") return
+
     if (item.category === "Barba") {
-      setCurrentBeard(prev => prev?.id === item.id ? null : item)
+      setCurrentBeard((prev) =>
+        prev?.id === item.id ? null : item
+      )
     } else {
-      setCurrentHaircut(prev => prev?.id === item.id ? null : item)
+      setCurrentHaircut((prev) =>
+        prev?.id === item.id ? null : item
+      )
     }
   }
 
-  // adiciona combinação para comparar
+  // PREMIUM → múltiplas combinações
   function addCombination() {
     if (!currentHaircut) return
 
     const exists = combinations.find(
-      c => c.haircut.id === currentHaircut.id && c.beard?.id === currentBeard?.id
+      (c) =>
+        c.haircut.id === currentHaircut.id &&
+        c.beard?.id === currentBeard?.id
     )
+
     if (exists) return
 
-    setCombinations(prev => [
+    setCombinations((prev) => [
       ...prev,
-      { haircut: currentHaircut, beard: currentBeard }
+      {
+        haircut: currentHaircut,
+        beard: currentBeard,
+      },
     ])
   }
 
-  // gerar prompts finais
-  // gerar prompts finais
+  // LANDING → geração direta
+  function handleLandingGenerate() {
+    if (!currentHaircut) return
+
+    const prefix =
+      "Apply this exact style to the person in the reference photo: "
+
+    const suffix =
+      ", keep the original face strictly identical, hyper-realistic, barber shop lighting, 8k resolution"
+
+    const haircutDescription =
+      currentHaircut.prompt || currentHaircut.name
+
+    const finalPrompt =
+      `${prefix}${haircutDescription}${suffix}`
+
+    onGenerate(finalPrompt)
+  }
+
+  // PREMIUM → múltiplas gerações
   function handleGenerateAll() {
     if (combinations.length === 0) return
 
-    // 1. Definimos modificadores globais para garantir qualidade
-    const prefix = "Apply this exact style to the person in the reference photo: "
-const suffix = ", keep the original face strictly identical, hyper-realistic, barber shop lighting, 8k resolution"
+    const prefix =
+      "Apply this exact style to the person in the reference photo: "
 
-    const prompts = combinations.map(c => {
-      // 2. Prioriza o prompt técnico do JSON
-      const haircutDescription = c.haircut.prompt || c.haircut.name
-      
+    const suffix =
+      ", keep the original face strictly identical, hyper-realistic, barber shop lighting, 8k resolution"
+
+    const prompts = combinations.map((c) => {
+      const haircutDescription =
+        c.haircut.prompt || c.haircut.name
+
       let finalItemPrompt = `${prefix}${haircutDescription}`
 
-      // 3. Se tiver barba, adiciona com um conector natural
       if (c.beard) {
-        const beardDescription = c.beard.prompt || c.beard.name
+        const beardDescription =
+          c.beard.prompt || c.beard.name
+
         finalItemPrompt += `, with ${beardDescription}`
       }
 
-      // 4. Fecha com os modificadores de qualidade
       return finalItemPrompt + suffix
     })
 
-    // 🔥 Envia a string gigante separada por "|" para o backend
-    onGenerate(prompts.join("|")) 
+    onGenerate(prompts.join("|"))
   }
 
-  const filteredHaircuts = haircutsData.filter(
-    cut => cut.category === activeFilter
-  )
+  const filteredHaircuts = isLanding
+    ? haircutsData.filter((cut) =>
+        landingHaircuts.includes(cut.id)
+      )
+    : haircutsData.filter(
+        (cut) => cut.category === activeFilter
+      )
 
   const canAddCombination = currentHaircut !== null
   const canGenerate = combinations.length > 0
 
   useEffect(() => {
-    if (loading ) return
-    
-  
+    if (loading) return
+
     fetch("/api/user/credits")
-      .then(res => res.json())
-      .then(data => setCredits(data.credits))
+      .then((res) => res.json())
+      .then((data) => setCredits(data.credits))
   }, [loading])
 
   return (
-     <div className="flex flex-col h-full">
-      <p className="mb-4 text-white/80 font-medium">Escolha o estilo</p>
+    <div className="flex flex-col h-full">
+      <p className="mb-4 text-white/80 font-medium">
+        {isLanding
+          ? "Escolha um estilo para testar"
+          : "Escolha o estilo"}
+      </p>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveFilter(cat)}
-            className={`px-4 py-2 text-sm rounded-full border transition cursor-pointer${
-              activeFilter === cat
-                ? "bg-primary border-primary text-white cursor-pointer"
-                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 cursor-pointer" 
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {/* PREMIUM ONLY */}
+      {!isLanding && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveFilter(cat)}
+              className={`px-4 py-2 text-sm rounded-full border transition cursor-pointer ${
+                activeFilter === cat
+                  ? "bg-primary border-primary text-white"
+                  : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="grid grid-cols-2 gap-4 max-h-[350px] overflow-y-auto pr-2">
+      <div
+        className={`grid gap-4 overflow-y-auto pr-2 ${
+          isLanding
+            ? "grid-cols-2"
+            : "grid-cols-2 max-h-[350px]"
+        }`}
+      >
         {filteredHaircuts.map((cut) => {
           const isSelected =
-            currentHaircut?.id === cut.id || currentBeard?.id === cut.id
+            currentHaircut?.id === cut.id ||
+            currentBeard?.id === cut.id
 
           const imageSrc = cut.image || fallbackImage
 
@@ -144,9 +206,11 @@ const suffix = ", keep the original face strictly identical, hyper-realistic, ba
               key={cut.id}
               onClick={() => handleSelect(cut as ItemType)}
               className={`relative h-40 rounded-xl overflow-hidden cursor-pointer border transition
-                ${isSelected
-                  ? "border-primary ring-2 ring-primary/50"
-                  : "border-white/10 hover:border-primary/40"}
+                ${
+                  isSelected
+                    ? "border-primary ring-2 ring-primary/50"
+                    : "border-white/10 hover:border-primary/40"
+                }
               `}
             >
               <img
@@ -154,7 +218,9 @@ const suffix = ", keep the original face strictly identical, hyper-realistic, ba
                 alt={cut.name}
                 className="absolute inset-0 w-full h-full object-cover"
               />
+
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
               <span className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white">
                 {cut.name}
               </span>
@@ -163,57 +229,99 @@ const suffix = ", keep the original face strictly identical, hyper-realistic, ba
         })}
       </div>
 
-      <button
-        onClick={addCombination}
-        disabled={!canAddCombination}
-        className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
-      >
-         Adicionar corte e barba para simulação
-      </button>
-
-      <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm space-y-3">
-        <p className="text-white/50">Simulações selecionadas:</p>
-
-        {combinations.length === 0 && (
-          <p className="text-white/40">Nenhuma ainda</p>
-        )}
-
-        {combinations.map((c, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 border border-white/10"
+      {/* PREMIUM */}
+      {!isLanding && (
+        <>
+          <button
+            onClick={addCombination}
+            disabled={!canAddCombination}
+            className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
           >
-            <div className="text-white font-medium">
-              • {c.haircut.name}
-              {c.beard && ` + ${c.beard.name}`}
-            </div>
+            Adicionar corte e barba para simulação
+          </button>
 
-            <button
-              onClick={() => setCombinations(prev => prev.filter((_, index) => index !== i))}
-              className="text-white/40 hover:text-red-400 transition text-sm"
-            >
-              ✕
-            </button>
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm space-y-3">
+            <p className="text-white/50">
+              Simulações selecionadas:
+            </p>
+
+            {combinations.length === 0 && (
+              <p className="text-white/40">
+                Nenhuma ainda
+              </p>
+            )}
+
+            {combinations.map((c, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 border border-white/10"
+              >
+                <div className="text-white font-medium">
+                  • {c.haircut.name}
+                  {c.beard && ` + ${c.beard.name}`}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setCombinations((prev) =>
+                      prev.filter(
+                        (_, index) => index !== i
+                      )
+                    )
+                  }
+                  className="text-white/40 hover:text-red-400 transition text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
-      <button
-        onClick={handleGenerateAll}
-        disabled={loading || !canGenerate || !hasEnoughCredits}
-        className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50 cursor-pointer"
-      >
-        {
-  loading
-    ? "Gerando..."
-    : !hasEnoughCredits
-      ? "Seus créditos acabaram"
-      : `✨ Gerar ${requiredCredits} simulação${requiredCredits > 1 ? "ões" : ""}`
-}
-      </button>
+      {/* BOTÃO LANDING */}
+      {isLanding && (
+        <button
+          onClick={handleLandingGenerate}
+          disabled={
+            loading ||
+            !currentHaircut ||
+            !hasEnoughCredits
+          }
+          className="mt-6 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50 cursor-pointer"
+        >
+          {loading
+            ? "Gerando..."
+            : !hasEnoughCredits
+            ? "Seu teste grátis acabou"
+            : "✨ Gerar teste grátis"}
+        </button>
+      )}
+
+      {/* BOTÃO PREMIUM */}
+      {!isLanding && (
+        <button
+          onClick={handleGenerateAll}
+          disabled={
+            loading ||
+            !canGenerate ||
+            !hasEnoughCredits
+          }
+          className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary font-semibold disabled:opacity-50 cursor-pointer"
+        >
+          {loading
+            ? "Gerando..."
+            : !hasEnoughCredits
+            ? "Seus créditos acabaram"
+            : `✨ Gerar ${requiredCredits} simulação${
+                requiredCredits > 1 ? "ões" : ""
+              }`}
+        </button>
+      )}
 
       <p className="text-xs text-white/40 mt-3 text-center">
-        Suas fotos são privadas e usadas apenas para gerar as simulações.
+        Suas fotos são privadas e usadas apenas para gerar as
+        simulações.
       </p>
     </div>
   )

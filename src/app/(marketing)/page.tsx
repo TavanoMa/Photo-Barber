@@ -8,6 +8,7 @@ import { authOptions } from "@/src/lib/auth";
 import { supabaseAdmin } from "@/src/lib/supabase";
 import OnboardingGate from "@/src/components/OnboardingGate";
 import HeaderLanding from "@/src/components/HeaderLanding"
+import GeneratePage from "@/src/components/GeneratePage";
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -33,8 +34,9 @@ export default async function Home() {
       <OnboardingGate needsOnboarding={needsOnboarding} />
 
       <HeroLanding/>
+      
       <SolutionSection/>
-      <Pricing/>
+      
       <CTA/>
     </>
   );

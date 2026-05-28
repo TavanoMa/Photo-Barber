@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/src/lib/supabase"
 import HeaderLanding from "@/src/components/HeaderLanding"
-import GeneratePage from "./GeneratePage"
+import GeneratePage from "../../../components/GeneratePage"
 import { notFound } from "next/navigation"
 
 interface PageProps {
@@ -43,7 +43,7 @@ export default async function Page({ params }: PageProps) {
       />
 
       <main className="pt-20">
-         <GeneratePage logoUrl={logoUrl} />
+         <GeneratePage logoUrl={logoUrl}  />
       </main>
     </div>
   )

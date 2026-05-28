@@ -59,7 +59,8 @@ export async function POST(req: Request) {
       phone,
       city,
       slug,
-      credits : 0,
+      credits : 200,
+      has_active_subscription: true,
     })
     .eq("email", userEmail)
 

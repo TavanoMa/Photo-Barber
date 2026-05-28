@@ -55,7 +55,7 @@ export default function GeneratePage({logoUrl}: Props) {
   return (
     <div className="w-full bg-[#07070c] text-white mt-10">
 
-        <HowItWorks></HowItWorks>
+        <HowItWorks mode="premium"></HowItWorks>
 
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
@@ -64,6 +64,7 @@ export default function GeneratePage({logoUrl}: Props) {
           <HaircutSelector
             onGenerate={generateHaircut}
             loading={loading}
+            mode="premium"
           />
         </div>
       </section>

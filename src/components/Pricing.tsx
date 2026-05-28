@@ -2,15 +2,17 @@
 
 export default function Pricing() {
 
-  
+
 async function subscribe(plan: string) {
   try {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate", // Força o navegador a não usar cache
       },
       body: JSON.stringify({ plan }),
+      cache: "no-store", // Força o Next.js a não usar cache no client-side
     })
 
     const data = await res.json()
