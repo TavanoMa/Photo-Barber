@@ -40,8 +40,10 @@ export default async function AppLayout({
         
       <ThemeProvider primary={primary} secondary={secondary} />
       
-      <main className="flex-1">{children}</main>
-      <FooterLanding></FooterLanding>
+      <main className="flex-1">{children}
+        <FooterLanding></FooterLanding>
+      </main>
+      
     </div>
   );
 }
