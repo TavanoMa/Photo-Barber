@@ -14,12 +14,10 @@ export default function HeroLanding() {
 
       <div className="max-w-6xl mx-auto px-6 text-center relative">
 
-        {/* badge */}
         <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-400 px-4 py-2 rounded-full text-sm mb-8">
           🚀 100% gratuito para barbeiros
         </div>
 
-        {/* headline */}
         <h1 className="text-5xl md:text-6xl font-bold leading-tight max-w-4xl mx-auto">
           Mostre ao cliente como ele vai ficar{" "}
           <span className="bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text text-transparent">
@@ -27,14 +25,12 @@ export default function HeroLanding() {
           </span>
         </h1>
 
-        {/* sub */}
         <p className="text-white/70 mt-6 max-w-3xl mx-auto text-lg">
           Tire duas fotos, escolha um estilo e nossa IA gera uma simulação
           realista em segundos. Tudo isso de forma totalmente gratuita para sua
           barbearia.
         </p>
 
-        {/* buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
           <LoginButton className="bg-gradient-to-r from-purple-500 to-fuchsia-600 px-8 py-4 rounded-full font-semibold hover:opacity-90 transition">
             Criar conta grátis
@@ -52,8 +48,18 @@ export default function HeroLanding() {
           Sem instalação • Funciona no celular • Uso gratuito
         </p>
 
-        {/* vídeo (futuro) */}
-        
+        {/* vídeo */}
+        <div className="mt-20 rounded-3xl border border-white/10 bg-[#0c0c14] overflow-hidden shadow-2xl">
+          <video
+             controls
+  playsInline
+  className="w-full aspect-video object-cover"
+  poster="/video-thumb.png"
+          >
+            <source src="/photobarber-video.mp4" type="video/mp4" />
+          </video>
+        </div>
+
       </div>
     </section>
   );
