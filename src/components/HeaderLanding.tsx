@@ -48,12 +48,15 @@ export default function Header(props: HeaderProps) {
           {isPublic ? (
   <>
     <Image
-      src={props.barbershop.logoUrl}
-      alt={props.barbershop.name}
-      width={40}
-      height={40}
-      className="rounded-lg object-cover"
-    />
+  src={
+    props.barbershop.logoUrl ||
+    "/photobarber-logo-transparente.png"
+  }
+  alt={props.barbershop.name}
+  width={40}
+  height={40}
+  className="rounded-lg object-cover"
+/>
     <span>{props.barbershop.name}</span>
   </>
 ) : (
