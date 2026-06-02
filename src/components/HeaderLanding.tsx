@@ -36,39 +36,34 @@ export default function Header(props: HeaderProps) {
 
   return (
     <header className="fixed top-0 w-full z-50 backdrop-blur border-b border-white/5 bg-[#07070c]/80">
-      <div
-  className={`max-w-6xl mx-auto px-6 flex items-center justify-between ${
-    isPublic ? "h-16" : "h-32"
-  }`}
->
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-32">
 
         {/* LOGO */}
         <div className="flex items-center gap-3 font-semibold text-lg">
 
           {isPublic ? (
   <>
+   <>
+ <>
+  <div className="h-32 flex items-center">
     <Image
-  src={
-    props.barbershop.logoUrl ||
-    "/photobarber-logo-transparente.png"
-  }
-  alt={props.barbershop.name}
-  width={40}
-  height={40}
-  className="rounded-lg object-cover"
-/>
-    <span>{props.barbershop.name}</span>
+      src={props.barbershop.logoUrl}
+      alt={props.barbershop.name}
+      width={650}
+      height={200}
+      className="h-28 w-auto max-w-[650px] object-contain mr-10"
+    />
+  </div>
+</>
+
+  <span>{props.barbershop.name}</span>
+</>
+
+    
   </>
 ) : (
-  <div className="flex items-center">
-    <Image
-  src="/photobarber-logo-transparente.png"
-  alt="PhotoBarber"
-  width={650}
-  height={200}
-  priority
-  className="h-32 md:h-36 w-auto object-contain"
-/>
+  <div className="flex items-center"> 
+  <Image src="/photobarber-logo-transparente.png" alt="PhotoBarber" width={650} height={200} priority className="h-32 md:h-36 w-auto object-contain" /> 
   </div>
 )}
         </div>

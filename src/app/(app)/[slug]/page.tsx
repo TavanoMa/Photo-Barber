@@ -30,7 +30,27 @@ export default async function Page({ params }: PageProps) {
   // 5. Monta a URL pública (ajuste a extensão se necessário, ex: .png ou .jpg)
   // Certifique-se que o bucket "logos" está público no Supabase
   const supabaseUrl = process.env.SUPABASE_URL
-  const logoUrl = `${supabaseUrl}/storage/v1/object/public/logos/${safeEmail}.png`
+
+const extensions = ["png", "jpeg", "jpg"]
+
+let logoUrl = "/photobarber-logo-transparente.png"
+
+for (const ext of extensions) {
+  const candidate =
+    `${supabaseUrl}/storage/v1/object/public/logos/${safeEmail}.${ext}`
+
+  try {
+    const response = await fetch(candidate, {
+      method: "HEAD",
+      cache: "no-store",
+    })
+
+    if (response.ok) {
+      logoUrl = candidate
+      break
+    }
+  } catch {}
+}
 
   return (
     <div className="min-h-screen bg-[#07070c] text-white">
