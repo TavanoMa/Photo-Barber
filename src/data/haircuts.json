@@ -28,13 +28,6 @@
     "prompt": "high skin fade: the shaved area goes very high — almost to the top of the head — only the very top 4-5cm retains hair with visible texture and volume, strong stark contrast between the bald sides and the hair on top, sides and back are skin-level below the top zone"
   },
   {
-    "id": "cesar-cut",
-    "name": "Corte César",
-    "category": "Curto",
-    "image": "/haircuts/cesar-cut.png",
-    "prompt": "caesar haircut: short blunt horizontal fringe covering the forehead, bangs cut straight across, uniform short textured top 2-3cm, low skin fade on sides"
-  },
-  {
     "id": "short-curly-fade",
     "name": "Cacho Curto com Degradê",
     "category": "Curto",
@@ -89,5 +82,68 @@
     "category": "Barba",
     "image": "/haircuts/cavanhaque.png",
     "prompt": "ADD a goatee to this person: facial hair ONLY on the chin and connected mustache on the upper lip forming a circle of hair around the mouth, cheeks completely clean-shaven with zero hair, sharp defined edges on the goatee"
+  },
+  {
+    "id": "old-money-short",
+    "name": "Old Money Curto",
+    "category": "Curto",
+    "image": "/haircuts/old-money-short.png",
+    "prompt": "short old money haircut: classic elegant men's haircut, neat traditional side-part, low subtle taper on the sides, clean sophisticated styling, soft natural texture, quiet luxury aesthetic"
+  },
+  {
+    "id": "old-money-medium",
+    "name": "Old Money Médio",
+    "category": "Médio",
+    "image": "/haircuts/old-money-medium.png",
+    "prompt": "medium length old money haircut: classic ivy league style, combed back and slightly to the side with rich flowing natural hair volume, clean tapered sides but not shaved, elegant and wealthy aesthetic"
+  },
+  {
+    "id": "old-money-long",
+    "name": "Old Money Longo",
+    "category": "Grande",
+    "image": "/haircuts/old-money-long.png",
+    "prompt": "long old money haircut: shoulder-length elegant layered hair, pushed back effortlessly, clean refined look, healthy flowing hair texture, rich classic gentlemen aesthetic"
+  },
+  {
+    "id": "corte-social",
+    "name": "Corte Social",
+    "category": "Curto",
+    "image": "/haircuts/corte-social.png",
+    "prompt": "classic social haircut: traditional conservative men's haircut, neat scissor-cut sides with a clean subtle taper, short even length on top, neatly combed, professional and formal appearance"
+  },
+  {
+    "id": "italian-cut",
+    "name": "Corte Italiano",
+    "category": "Médio",
+    "image": "/haircuts/italian-cut.png",
+    "prompt": "italian haircut style: highly textured wavy hair on top with a casual flow, swept back or slightly messy, soft tapered sides that blend seamlessly, effortless Mediterranean gentleman look, rich volume"
+  },
+  {
+    "id": "short-fringe",
+    "name": "Short Franja (French Crop)",
+    "category": "Curto",
+    "image": "/haircuts/short-fringe.png",
+    "prompt": "short fringe crop haircut: textured messy top, straight blunt short bangs cut high on the forehead, high skin fade on the sides and back, sharp modern clean look"
+  },
+  {
+    "id": "classic-mullet",
+    "name": "Mullet Clássico",
+    "category": "Médio",
+    "image": "/haircuts/classic-mullet.png",
+    "prompt": "classic mullet haircut: short business-like hair on top and short sides, with distinct long flowing hair trailing down the back past the collar, retro 80s style"
+  },
+  {
+    "id": "barba-italiana",
+    "name": "Barba Italiana",
+    "category": "Barba",
+    "image": "/haircuts/barba-italiana.png",
+    "prompt": "ADD an Italian style beard: short to medium well-groomed beard, sharp precisely defined cheek lines, thin clean contours along the jawline, neatly trimmed short mustache connecting to the beard, classic elegant Mediterranean facial hair"
+  },
+  {
+    "id": "barba-baviera-bigode",
+    "name": "Barba Baviera e Bigode Cheio",
+    "category": "Barba",
+    "image": "/haircuts/barba-baviera-bigode.png",
+    "prompt": "ADD a Bavarian style beard with a thick mustache: full long voluminous beard paired with an exceptionally large, dense, prominent handlebar mustache that curves slightly at the ends, rustic alpine explorer aesthetic, rich thick facial hair texture"
   }
 ]

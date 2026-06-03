@@ -51,7 +51,7 @@ export default function Header(props: HeaderProps) {
       alt={props.barbershop.name}
       width={650}
       height={200}
-      className="h-28 w-auto max-w-[650px] object-contain mr-10"
+      className="h-28 w-auto max-w-[650px] object-contain mr-5"
     />
   </div>
 </>
