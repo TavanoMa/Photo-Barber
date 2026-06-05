@@ -1,10 +1,10 @@
 [
   {
     "id": "buzz-cut",
-    "name": "Raspado (Buzz Cut)",
+    "name": "Raspado com Degradê (Buzz Cut Fade)",
     "category": "Curto",
     "image": "/haircuts/buzzcut.jpeg",
-    "prompt": "buzz cut using #3 clipper guard , uniform short stubble covering the entire head — NOT bald, short visible hair texture throughout, clean sharp hairline, military style"
+    "prompt": "high skin fade buzz cut: the top of the head features short uniform stubble using a #3 clipper guard, while the sides and back are shaved into a sharp high skin fade, smooth gradient transitioning from bare skin at the bottom up to the short hair on top, crisp sharp hairline, high visual contrast between the bald sides and the stubble on top"
   },
   {
     "id": "low-fade-short",
@@ -88,14 +88,14 @@
     "name": "Old Money Curto",
     "category": "Curto",
     "image": "/haircuts/old-money-short.png",
-    "prompt": "short old money haircut: classic elegant men's haircut, neat traditional side-part, low subtle taper on the sides, clean sophisticated styling, soft natural texture, quiet luxury aesthetic"
+    "prompt": "short classic gentleman haircut: distinct visible side-part, 3 to 4 cm hair length on top swept neatly to the side with visible volume, tightly scissor-cut sides and back (NO bald fade, NO skin fade, scalp must be fully covered by hair), soft natural blending around the ears, textured but controlled hair strands"
   },
   {
     "id": "old-money-medium",
     "name": "Old Money Médio",
     "category": "Médio",
     "image": "/haircuts/old-money-medium.png",
-    "prompt": "medium length old money haircut: classic ivy league style, combed back and slightly to the side with rich flowing natural hair volume, clean tapered sides but not shaved, elegant and wealthy aesthetic"
+    "prompt": "medium length flow haircut: thick dense hair covering the top of the ears slightly, 6 to 8 cm hair length all over the head, pushed completely backwards with natural flowing waves, high volume on top and sides, NO shaved parts, full thick sides blending into the long top, natural fluffy hair texture"
   },
   {
     "id": "old-money-long",
@@ -109,7 +109,7 @@
     "name": "Corte Social",
     "category": "Curto",
     "image": "/haircuts/corte-social.png",
-    "prompt": "classic social haircut: traditional conservative men's haircut, neat scissor-cut sides with a clean subtle taper, short even length on top, neatly combed, professional and formal appearance"
+    "prompt": "standard short men's haircut: uniform 2cm hair length on top, closely scissor-cut sides and back fading softly to the neckline, completely fully covered scalp (NOT skin shaved), neatly combed flat, completely conventional and symmetrical short back and sides, realistic hair density"
   },
   {
     "id": "italian-cut",
@@ -137,7 +137,7 @@
     "name": "Barba Italiana",
     "category": "Barba",
     "image": "/haircuts/barba-italiana.png",
-    "prompt": "ADD an Italian style beard: short to medium well-groomed beard, sharp precisely defined cheek lines, thin clean contours along the jawline, neatly trimmed short mustache connecting to the beard, classic elegant Mediterranean facial hair"
+    "prompt": "ADD a natural short stubble beard: 3 to 5mm length facial hair, realistic individual hair follicles, soft natural fade on the upper cheeks (NOT drawn or sharp lines), well-blended short mustache, full natural coverage along the jawline with realistic human skin slightly showing through the stubble, completely natural non-artificial edges"
   },
   {
     "id": "barba-baviera-bigode",
