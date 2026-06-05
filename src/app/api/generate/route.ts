@@ -3,34 +3,34 @@ import sharp from "sharp"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/src/lib/auth"
 import { supabaseAdmin } from "@/src/lib/supabase"
-
+ 
 export const runtime = "nodejs"
-
+ 
 // Aumenta o tempo máximo da rota (Vercel Pro: até 300s, Hobby: 60s)
 export const maxDuration = 120
-
+ 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-
+ 
 /* -------------------------------------------------- */
 /* TYPES                                              */
 /* -------------------------------------------------- */
-
+ 
 interface ORImageUrl {
   url: string
 }
-
+ 
 interface ORContent {
   type: "text" | "image_url"
   text?: string
   image_url?: ORImageUrl
 }
-
+ 
 interface ORBody {
   model: string
   messages: { role: "user"; content: ORContent[] }[]
   modalities: ["image", "text"]
 }
-
+ 
 interface ORResponse {
   id?: string
   error?: { message: string; code?: number }
@@ -41,42 +41,60 @@ interface ORResponse {
     }
   }[]
 }
-
+ 
 /* -------------------------------------------------- */
 /* IMAGE UTILS                                        */
 /* -------------------------------------------------- */
-
-const MAX_DIMENSION = 1920 // Aumentado para Full HD (melhora as texturas na IA)
-const JPEG_QUALITY  = 95   // Aumentado para evitar artefatos de compressão
-
+ 
+const MAX_DIMENSION = 2048 // Limite seguro para a maioria das APIs de visão
+ 
 /**
- * Redimensiona e comprime a imagem usando sharp.
- * Funciona como segunda barreira caso o cliente envie imagem grande.
+ * Prepara a imagem para envio ao modelo.
+ *
+ * Estratégia:
+ * - Se a imagem já couber dentro de MAX_DIMENSION, envia o buffer original
+ *   sem nenhuma recompressão (zero perda de qualidade).
+ * - Só redimensiona quando realmente necessário, usando PNG (sem perda)
+ *   para não introduzir artefatos adicionais ao JPEG original.
+ *
+ * Resultado esperado nos logs:
+ *   → 0.8 MB (original, sem resize)   ✅ ideal
+ *   → 2.1 MB após resize               ✅ aceitável
+ *   Evitar: → 0.07 MB                  ❌ muito pequeno, degrada a IA
  */
-async function compressImage(file: File): Promise<string> {
+async function prepareImage(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer())
-
-  const compressed = await sharp(buffer)
+  const meta = await sharp(buffer).metadata()
+  const { width = 0, height = 0 } = meta
+ 
+  // Imagem dentro do limite: envia o original intacto, sem nenhum processamento
+  if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+    const base64 = buffer.toString("base64")
+    const mime = file.type || "image/jpeg"
+    const sizeMB = (buffer.length / 1024 / 1024).toFixed(2)
+    console.log(`[prepare] ${file.name} → ${sizeMB} MB (original, sem resize)`)
+    return `data:${mime};base64,${base64}`
+  }
+ 
+  // Imagem maior que o limite: redimensiona com PNG (sem perda de qualidade)
+  const resized = await sharp(buffer)
     .resize(MAX_DIMENSION, MAX_DIMENSION, {
-      fit: "inside",        // mantém proporção, nunca amplia
+      fit: "inside",           // mantém proporção, nunca distorce
       withoutEnlargement: true,
     })
-    .sharpen({ sigma: 1.0, m1: 2.0, x1: 2.0 }) // Força nitidez antes do upload
-    .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
+    .png({ compressionLevel: 6 }) // compressão lossless
     .toBuffer()
-
-  const base64 = compressed.toString("base64")
-
-  const sizeMB = (base64.length * 0.75 / 1024 / 1024).toFixed(2)
-  console.log(`[compress] ${file.name} → ${sizeMB} MB após compressão`)
-
-  return `data:image/jpeg;base64,${base64}`
+ 
+  const base64 = resized.toString("base64")
+  const sizeMB = (resized.length / 1024 / 1024).toFixed(2)
+  console.log(`[prepare] ${file.name} → ${sizeMB} MB após resize (${width}x${height} → ≤${MAX_DIMENSION})`)
+  return `data:image/png;base64,${base64}`
 }
-
+ 
 /* -------------------------------------------------- */
 /* OPENROUTER CALL                                    */
 /* -------------------------------------------------- */
-
+ 
 async function callOpenRouter(
   prompt: string,
   frontUri: string,
@@ -97,11 +115,11 @@ async function callOpenRouter(
     ],
     modalities: ["image", "text"],
   }
-
+ 
   // Timeout explícito de 90s para não travar silenciosamente
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 90_000)
-
+ 
   let res: Response
   try {
     res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
@@ -118,136 +136,144 @@ async function callOpenRouter(
   } finally {
     clearTimeout(timeout)
   }
-
+ 
   // ─── Log de status HTTP ───────────────────────────
   console.log(`[openrouter] status: ${res.status}`)
-
+ 
   const data = (await res.json()) as ORResponse
-
+ 
   // ─── Log do erro da API (se houver) ──────────────
   if (data.error) {
     console.error("[openrouter] erro da API:", JSON.stringify(data.error))
     return null
   }
-
+ 
   // ─── Log do choices completo ──────────────────────
   if (!data.choices?.length) {
     console.error("[openrouter] resposta sem choices:", JSON.stringify(data))
     return null
   }
-
+ 
   const message = data.choices[0].message
   console.log("[openrouter] message keys:", Object.keys(message))
-
+ 
   const imageUrl = message.images?.[0]?.image_url?.url ?? null
-
+ 
   if (!imageUrl) {
     console.error(
       "[openrouter] sem imagem no retorno. content:",
-      message.content?.slice(0, 200) // primeiros 200 chars do texto, se vier
+      message.content?.slice(0, 200)
     )
+    return null
   }
-
+ 
+  // ─── Log do retorno ───────────────────────────────
+  const isBase64 = imageUrl.startsWith("data:")
+  const sizeKB = isBase64
+    ? ((imageUrl.length * 0.75) / 1024).toFixed(0)
+    : "URL externa"
+  console.log(`[openrouter] imagem: ${isBase64 ? "base64" : "URL"} | tamanho: ${sizeKB} KB`)
+ 
   return imageUrl
 }
-
+ 
 /* -------------------------------------------------- */
 /* PROMPTS                                            */
 /* -------------------------------------------------- */
-
+ 
 const BASE_PROMPT = `
 You are a PROFESSIONAL BARBER PHOTO RETOUCHER.
-
+ 
 This is NOT image generation.
 This is a SURGICAL photo edit using TWO real photos of the SAME PERSON.
-
+ 
 IMAGE #1 = FRONT VIEW  
 IMAGE #2 = SIDE VIEW (used to understand fade, taper and head shape)
-
+ 
 ━━━━━━━━━━━━━━━━━━━
 PRIMARY GOAL
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 Create ONE FINAL PHOTO of the SAME PERSON with the requested haircut.
-
+ 
 The result must look like a REAL PHOTO taken right after a real haircut.
 No AI look. No stylization.
-
+ 
 The head MUST be turned EXACTLY 20 degrees to the right — not 10, not 15, always exactly 20 degrees.
 This is fixed and non-negotiable.
-
+ 
 ━━━━━━━━━━━━━━━━━━━
 IDENTITY LOCK (ABSOLUTE)
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 The person MUST remain identical.
-
+ 
 DO NOT change:
 face, eyes, eyebrows, nose, mouth, ears  
 skin tone, ethnicity, age, gender  
 expression, face shape, head shape
-
+ 
 NO beautification. NO smoothing. NO makeup. NO "AI face".
-
+ 
 ━━━━━━━━━━━━━━━━━━━
 BACKGROUND LOCK (ABSOLUTE)
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 The background MUST be 100% identical to IMAGE #1.
-
+ 
 DO NOT change, replace, blur, or alter:
 - background colors, walls, objects
 - lighting direction and shadows on the background
 - depth of field
 - camera framing and zoom level
-
+ 
 ━━━━━━━━━━━━━━━━━━━
 SCENE LOCK
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 Keep EVERYTHING from IMAGE #1 except the hair:
 - background (absolute)
 - lighting on the person
 - camera angle and lens
 - clothing
-
+ 
 ━━━━━━━━━━━━━━━━━━━
 HAIR EDIT RULES
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 You may change ONLY the hair.
-
+ 
 Allowed: hair length, volume, texture, direction, density, fade/taper/neckline  
 Preserve: natural hairline, realistic growth patterns, believable barber blending
-
+ 
 NO wigs. NO painted hair. NO fake strands. NO over sharpening. NO beauty filters.
 `
-
+ 
 function buildHaircutPrompt(haircut: string) {
   return `
 ━━━━━━━━━━━━━━━━━━━
 REQUESTED HAIRCUT
 ━━━━━━━━━━━━━━━━━━━
-
+ 
 Simulate EXACTLY this haircut on the person:
-
+ 
 ${haircut}
-
+ 
 CRITICAL RULES FOR THIS EDIT:
 - This haircut COMPLETELY REPLACES the current hairstyle
 - If the style includes a fade or taper: the gradient MUST be clearly and realistically visible
 - If the style includes a beard or mustache: ADD the facial hair even if the person has none
 - The head should be turned slightly (20°) so the fade/sides are visible
 - Hair length and texture on top must match exactly — do NOT over-shave
-
+ 
 Return ONLY the final edited photo.
 `
 }
-
+ 
 /* -------------------------------------------------- */
 /* ROUTE                                              */
 /* -------------------------------------------------- */
-
+ 
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.OPENROUTER_API_KEY
@@ -255,7 +281,7 @@ export async function POST(req: Request) {
       console.error("[route] OPENROUTER_API_KEY não configurada")
       return NextResponse.json({ error: "API KEY não configurada" }, { status: 500 })
     }
-
+ 
     // ─── 1. Autenticação ────────────────────────────────
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
@@ -264,64 +290,64 @@ export async function POST(req: Request) {
         { status: 401 }
       )
     }
-
+ 
     // ─── 2. Busca do Usuário e Créditos ────────────────
     const { data: user } = await supabaseAdmin
       .from("users")
       .select("id, credits")
       .eq("email", session.user.email)
       .single()
-
+ 
     if (!user) {
       return NextResponse.json(
         { error: "Usuário não encontrado." },
         { status: 404 }
       )
     }
-
+ 
     // ─── 3. Validação dos Dados do Formulário ──────────
     const formData = await req.formData()
-
-    const promptsString = formData.get("haircut")  as string | null
+ 
+    const promptsString = formData.get("haircut")   as string | null
     const frontFile     = formData.get("frontImage") as File | null
     const sideFile      = formData.get("sideImage")  as File | null
-
+ 
     if (!promptsString || !frontFile || !sideFile) {
       const missing = [
         !promptsString && "haircut",
         !frontFile     && "frontImage",
         !sideFile      && "sideImage",
       ].filter(Boolean)
-
+ 
       console.error("[route] campos faltando:", missing)
       return NextResponse.json(
         { error: `Campos obrigatórios ausentes: ${missing.join(", ")}` },
         { status: 400 }
       )
     }
-
+ 
     console.log(`[route] frontImage: ${frontFile.name} (${(frontFile.size / 1024).toFixed(0)} KB)`)
     console.log(`[route] sideImage:  ${sideFile.name}  (${(sideFile.size / 1024).toFixed(0)} KB)`)
-    
+ 
     const prompts = promptsString.split("|").filter(Boolean)
     console.log(`[route] prompts: ${prompts.length} corte(s)`)
-
+ 
     // ─── 4. Verificação de Créditos ────────────────────
     const creditsNeeded = prompts.length
-
+ 
     if (user.credits < creditsNeeded) {
       return NextResponse.json(
         { error: `Você possui ${user.credits} crédito(s), mas precisa de ${creditsNeeded}.` },
         { status: 400 }
       )
     }
-
-    // ─── 5. Compressão de imagens (backend) ────────────
+ 
+    // ─── 5. Preparação de imagens (backend) ────────────
     const [frontUri, sideUri] = await Promise.all([
-      compressImage(frontFile),
-      compressImage(sideFile),
+      prepareImage(frontFile),
+      prepareImage(sideFile),
     ])
-
+ 
     // ─── 6. Chamadas paralelas ao OpenRouter ───────────
     const results = await Promise.allSettled(
       prompts.map(async (haircut, i) => {
@@ -332,34 +358,36 @@ export async function POST(req: Request) {
         return url
       })
     )
-
-    const images  = results.filter(r => r.status === "fulfilled").map(r => (r as PromiseFulfilledResult<string>).value)
-    const failed  = results.filter(r => r.status === "rejected").length
-
+ 
+    const images = results
+      .filter(r => r.status === "fulfilled")
+      .map(r => (r as PromiseFulfilledResult<string>).value)
+    const failed = results.filter(r => r.status === "rejected").length
+ 
     console.log(`[route] geradas: ${images.length} | falhas: ${failed}`)
-
+ 
     if (!images.length) {
       return NextResponse.json(
         { error: "Nenhuma imagem foi gerada. Verifique os logs do servidor." },
         { status: 500 }
       )
     }
-
+ 
     // ─── 7. Atualização dos Créditos (pós-sucesso) ─────
     const remainingCredits = Math.max(0, user.credits - images.length)
-
+ 
     await supabaseAdmin
       .from("users")
       .update({ credits: remainingCredits })
       .eq("id", user.id)
-
+ 
     // ─── 8. Retorno de Sucesso ─────────────────────────
     return NextResponse.json({
       images,
       failed,
       remainingCredits,
     })
-
+ 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.error("[route] erro não tratado:", message)
