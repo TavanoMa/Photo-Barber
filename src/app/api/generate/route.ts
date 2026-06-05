@@ -46,8 +46,8 @@ interface ORResponse {
 /* IMAGE UTILS                                        */
 /* -------------------------------------------------- */
 
-const MAX_DIMENSION = 1920 // Aumentado para Full HD (ideal para texturas de cabelo)
-const JPEG_QUALITY  = 95   // Aumentado para evitar artefatos (reduz aspecto borrado)
+const MAX_DIMENSION = 1920 // Aumentado para Full HD (melhora as texturas na IA)
+const JPEG_QUALITY  = 95   // Aumentado para evitar artefatos de compressão
 
 /**
  * Redimensiona e comprime a imagem usando sharp.
@@ -61,7 +61,7 @@ async function compressImage(file: File): Promise<string> {
       fit: "inside",        // mantém proporção, nunca amplia
       withoutEnlargement: true,
     })
-    .sharpen({ sigma: 1.0, m1: 2.0, x1: 2.0 }) // Força nitidez nos fios antes de enviar pra IA
+    .sharpen({ sigma: 1.0, m1: 2.0, x1: 2.0 }) // Força nitidez antes do upload
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
     .toBuffer()
 
@@ -152,65 +152,95 @@ async function callOpenRouter(
 }
 
 /* -------------------------------------------------- */
-/* PROMPTS (HIGH-FIDELITY REFACTORED)                 */
+/* PROMPTS                                            */
 /* -------------------------------------------------- */
 
 const BASE_PROMPT = `
-You are an ELITE COMMERCIAL PHOTOGRAPHY RETOUCHER and Master Barber Editor.
+You are a PROFESSIONAL BARBER PHOTO RETOUCHER.
 
-This is a SURGICAL, ULTRA-HIGH-RESOLUTION photo edit using TWO real photos of the SAME PERSON.
-Your output must match the quality of a high-end fashion magazine or commercial hair product advertisement.
+This is NOT image generation.
+This is a SURGICAL photo edit using TWO real photos of the SAME PERSON.
 
-IMAGE #1 = FRONT VIEW (Primary composition reference)
-IMAGE #2 = SIDE VIEW (Used strictly for head shape, fade gradient, and neckline reference)
+IMAGE #1 = FRONT VIEW  
+IMAGE #2 = SIDE VIEW (used to understand fade, taper and head shape)
 
 ━━━━━━━━━━━━━━━━━━━
-PRIMARY QUALITY & RENDER RULES
+PRIMARY GOAL
 ━━━━━━━━━━━━━━━━━━━
-- CAMERA SPECIFICATION: Render the output as if captured with a professional full-frame mirrorless camera, 85mm prime lens, f/4 aperture for maximum sharpness and tack-sharp focus on the hair.
-- MICRO-TEXTURES: Every single individual strand of hair, stubble fiber, and hair follicle must be crystal clear, crisp, and sharply defined. 
-- NO SMOOTHING: Absolute ban on plastic skin textures, AI smudging, or painting effects. Retain natural skin pores and hair density.
-- LIGHTING: Premium barber studio lighting. Rich contrast, clean specular highlights on the hair contours, and natural, realistic shadows.
-- HEAD ANGLE: The head MUST be turned EXACTLY 20 degrees to the right in the final output to display both the facial features and the side haircut profile beautifully.
+
+Create ONE FINAL PHOTO of the SAME PERSON with the requested haircut.
+
+The result must look like a REAL PHOTO taken right after a real haircut.
+No AI look. No stylization.
+
+The head MUST be turned EXACTLY 20 degrees to the right — not 10, not 15, always exactly 20 degrees.
+This is fixed and non-negotiable.
 
 ━━━━━━━━━━━━━━━━━━━
 IDENTITY LOCK (ABSOLUTE)
 ━━━━━━━━━━━━━━━━━━━
-The person's face MUST remain 100% identical to IMAGE #1.
-- DO NOT alter or touch: eyes, eyebrows, nose, mouth, ears, skin tone, ethnicity, age, bone structure, expression, or facial shape.
-- No facial distortion, no AI-beautification, no artificial makeup.
+
+The person MUST remain identical.
+
+DO NOT change:
+face, eyes, eyebrows, nose, mouth, ears  
+skin tone, ethnicity, age, gender  
+expression, face shape, head shape
+
+NO beautification. NO smoothing. NO makeup. NO "AI face".
 
 ━━━━━━━━━━━━━━━━━━━
-BACKGROUND & SCENE LOCK (ABSOLUTE)
+BACKGROUND LOCK (ABSOLUTE)
 ━━━━━━━━━━━━━━━━━━━
-The background MUST be a 100% pixel-perfect match to IMAGE #1.
-- DO NOT replace, blur, re-render, or shift any background objects, colors, walls, or depth of field.
-- Keep the exact same camera framing, zoom level, clothing, and environment from IMAGE #1.
+
+The background MUST be 100% identical to IMAGE #1.
+
+DO NOT change, replace, blur, or alter:
+- background colors, walls, objects
+- lighting direction and shadows on the background
+- depth of field
+- camera framing and zoom level
 
 ━━━━━━━━━━━━━━━━━━━
-HAIR EDIT EXECUTION
+SCENE LOCK
 ━━━━━━━━━━━━━━━━━━━
-Modify ONLY the hair and facial hair space. 
-- Seamlessly blend the new hairstyle into the person's natural hairline and head shape.
-- The transition between the edited hair and the untouched skin must look completely organic, with realistic baby hairs and natural follicle growth patterns.
+
+Keep EVERYTHING from IMAGE #1 except the hair:
+- background (absolute)
+- lighting on the person
+- camera angle and lens
+- clothing
+
+━━━━━━━━━━━━━━━━━━━
+HAIR EDIT RULES
+━━━━━━━━━━━━━━━━━━━
+
+You may change ONLY the hair.
+
+Allowed: hair length, volume, texture, direction, density, fade/taper/neckline  
+Preserve: natural hairline, realistic growth patterns, believable barber blending
+
+NO wigs. NO painted hair. NO fake strands. NO over sharpening. NO beauty filters.
 `
 
 function buildHaircutPrompt(haircut: string) {
   return `
 ━━━━━━━━━━━━━━━━━━━
-REQUESTED HAIRCUT DESIGN
+REQUESTED HAIRCUT
 ━━━━━━━━━━━━━━━━━━━
-Execute the following style with absolute precision, maximum sharpness, and cinematic fidelity:
+
+Simulate EXACTLY this haircut on the person:
 
 ${haircut}
 
-CRITICAL EXECUTION DIRECTIVES:
-1. This style COMPLETELY REPLACES the original hair.
-2. If the style includes a fade, taper, or shave: the gradient must transition flawlessly with high-definition texture from bare skin to hair.
-3. If the style includes a beard/mustache: render realistic, individual facial hair strands growing naturally from the jaw/lip skin, even if the original person is clean-shaven.
-4. Maintain extreme clarity on the edges (sharp line-up) but keep the hair fibers looking soft, organic, and realistic.
+CRITICAL RULES FOR THIS EDIT:
+- This haircut COMPLETELY REPLACES the current hairstyle
+- If the style includes a fade or taper: the gradient MUST be clearly and realistically visible
+- If the style includes a beard or mustache: ADD the facial hair even if the person has none
+- The head should be turned slightly (20°) so the fade/sides are visible
+- Hair length and texture on top must match exactly — do NOT over-shave
 
-Return exclusively the final high-resolution edited photograph.
+Return ONLY the final edited photo.
 `
 }
 
