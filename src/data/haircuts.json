@@ -20,20 +20,20 @@
     "image": "/haircuts/mid-fade.png",
     "prompt": "mid skin fade: fade begins exactly at temple and mid-ear height, smooth gradient from bare skin at the bottom transitioning upward, the blending line is visible at temple level, sides below the temple are shaved, hair on top remains full at least 3-4cm with texture and volume"
   },
-  {
+ {
     "id": "high-fade-short",
     "name": "Degradê Alto (High Fade)",
     "category": "Curto",
     "image": "/haircuts/high-fade.png",
-    "prompt": "high skin fade: the shaved area goes very high — almost to the top of the head — only the very top 4-5cm retains hair with visible texture and volume, strong stark contrast between the bald sides and the hair on top, sides and back are skin-level below the top zone"
+    "prompt": "high skin fade haircut: the hair on top of the head remains completely untouched, full and thick with its original volume and texture, while ONLY the sides and back are shaved into a sharp high skin fade, the bald fade goes very high up to the temple level, crisp blending line, dramatic contrast between the intact top hair and the bare skin sides"
   },
-  {
-    "id": "short-curly-fade",
-    "name": "Cacho Curto com Degradê",
-    "category": "Curto",
-    "image": "/haircuts/short-curly-fade.png",
-    "prompt": "short curly hair on top with defined natural curl pattern and texture, low drop fade on sides with smooth gradient from skin upward, clean perimeter line-up, curls kept natural and round on top"
-  },
+ {
+  "id": "short-curly-fade",
+  "name": "Cacho Curto com Degradê",
+  "category": "Curto",
+  "image": "/haircuts/short-curly-fade.png",
+  "prompt": "short curly hair on top with defined natural curl pattern, low drop fade on sides, clean perimeter line-up around the ears, completely clean-shaven face, absolutely no beard, no mustache, smooth bare skin on face"
+},
   {
     "id": "short-military-coily",
     "name": "Crespo Curto",
@@ -48,13 +48,7 @@
     "image": "/haircuts/burst-fade.png",
     "prompt": "burst fade mohawk: a CLEARLY VISIBLE narrow strip of longer hair running from the forehead down to the nape forming a distinct mohawk ridge on top, the burst fade creates a circular arc around each ear fading to skin level, sides are almost fully shaved leaving ONLY the central mohawk strip raised and prominent, medium length textured hair on the mohawk strip"
   },
-  {
-    "id": "modern-mullet",
-    "name": "Mullet Moderno",
-    "category": "Médio",
-    "image": "/haircuts/modern-mullet.png",
-    "prompt": "modern mullet: short textured sides, short top, but the back hair is SIGNIFICANTLY longer — 8 to 12cm — hanging down past the neckline, clear visual contrast between short front and long flowing back, slightly messy textured top"
-  },
+  
   {
     "id": "man-bun-samurai",
     "name": "Coque Samurai",
@@ -69,12 +63,12 @@
     "image": "/haircuts/barbacheia.png",
     "prompt": "ADD a thick full beard to this person: dense realistic facial hair covering the cheeks, jawline, chin and upper lip, well-groomed connecting mustache to full jaw coverage, natural neckline beard trim, highly detailed realistic beard hair texture"
   },
-  {
+{
     "id": "bigode",
     "name": "Bigode",
     "category": "Barba",
     "image": "/haircuts/bigode.png",
-    "prompt": "ADD a mustache ONLY to this person: thick prominent hair growing exclusively on the upper lip area, absolutely clean-shaven chin, cheeks and jawline with NO other facial hair anywhere, the mustache must be clearly and distinctly visible — thick and well-defined above the lip only"
+    "prompt": "ADD a realistic classic mustache ONLY to this person: clean and sharp lines defining a neat mustache on the upper lip, highly detailed individual hair strands with natural texture, the edges blend organically into the skin, cheeks, chin and jawline must be completely clean-shaven with smooth bare skin, no artificial blocks of hair"
   },
   {
     "id": "cavanhaque",
@@ -133,12 +127,12 @@
     "prompt": "classic mullet haircut: short business-like hair on top and short sides, with distinct long flowing hair trailing down the back past the collar, retro 80s style"
   },
   {
-    "id": "barba-italiana",
-    "name": "Barba Italiana",
-    "category": "Barba",
-    "image": "/haircuts/barba-italiana.png",
-    "prompt": "ADD a natural short stubble beard: 3 to 5mm length facial hair, realistic individual hair follicles, soft natural fade on the upper cheeks (NOT drawn or sharp lines), well-blended short mustache, full natural coverage along the jawline with realistic human skin slightly showing through the stubble, completely natural non-artificial edges"
-  },
+  "id": "barba-italiana",
+  "name": "Barba Italiana",
+  "category": "Barba",
+  "image": "/haircuts/barba-italiana.png",
+  "prompt": "ADD a classic Italian-style beard: short-to-medium length, full and dense facial hair with a naturally elegant appearance, perfectly connected mustache and beard, slightly rounded contours following the jawline, clean but not overly sharp cheek lines, refined Mediterranean gentleman style, professional barbershop grooming, realistic beard texture and natural hair density"
+},
   {
     "id": "barba-baviera-bigode",
     "name": "Barba Baviera e Bigode Cheio",

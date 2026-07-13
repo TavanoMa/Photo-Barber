@@ -21,8 +21,9 @@ type ItemType = {
 }
 
 type Combination = {
-  haircut: ItemType
+  haircut: ItemType | null
   beard?: ItemType | null
+  customText?: string
 }
 
 export default function HaircutSelector({
@@ -38,6 +39,7 @@ export default function HaircutSelector({
 
   const [currentHaircut, setCurrentHaircut] = useState<ItemType | null>(null)
   const [currentBeard, setCurrentBeard] = useState<ItemType | null>(null)
+  const [customText, setCustomText] = useState("")
 
   const [combinations, setCombinations] = useState<Combination[]>([])
 
@@ -74,12 +76,16 @@ export default function HaircutSelector({
 
   // PREMIUM → múltiplas combinações
   function addCombination() {
-    if (!currentHaircut) return
+    const trimmedCustom = customText.trim()
+
+    // Precisa de pelo menos um corte, uma barba OU uma descrição personalizada
+    if (!currentHaircut && !currentBeard && !trimmedCustom) return
 
     const exists = combinations.find(
       (c) =>
-        c.haircut.id === currentHaircut.id &&
-        c.beard?.id === currentBeard?.id
+        c.haircut?.id === currentHaircut?.id &&
+        c.beard?.id === currentBeard?.id &&
+        (c.customText || "") === trimmedCustom
     )
 
     if (exists) return
@@ -89,8 +95,11 @@ export default function HaircutSelector({
       {
         haircut: currentHaircut,
         beard: currentBeard,
+        customText: trimmedCustom || undefined,
       },
     ])
+
+    setCustomText("")
   }
 
   // LANDING → geração direta
@@ -123,16 +132,24 @@ export default function HaircutSelector({
       ", keep the original face strictly identical, hyper-realistic, barber shop lighting, 8k resolution"
 
     const prompts = combinations.map((c) => {
-      const haircutDescription =
-        c.haircut.prompt || c.haircut.name
+      const parts: string[] = []
 
-      let finalItemPrompt = `${prefix}${haircutDescription}`
+      if (c.haircut) {
+        parts.push(c.haircut.prompt || c.haircut.name)
+      }
 
       if (c.beard) {
-        const beardDescription =
-          c.beard.prompt || c.beard.name
+        const beardDescription = c.beard.prompt || c.beard.name
+        parts.push(c.haircut ? `with ${beardDescription}` : beardDescription)
+      }
 
-        finalItemPrompt += `, with ${beardDescription}`
+      let finalItemPrompt =
+        parts.length > 0
+          ? `${prefix}${parts.join(", ")}`
+          : "Apply the following custom haircut instructions to the person in the reference photo"
+
+      if (c.customText) {
+        finalItemPrompt += `. Barber's custom instructions (highest priority, follow precisely): ${c.customText}`
       }
 
       return finalItemPrompt + suffix
@@ -149,7 +166,8 @@ export default function HaircutSelector({
         (cut) => cut.category === activeFilter
       )
 
-  const canAddCombination = currentHaircut !== null
+  const canAddCombination =
+    currentHaircut !== null || currentBeard !== null || customText.trim().length > 0
   const canGenerate = combinations.length > 0
 
   useEffect(() => {
@@ -232,12 +250,28 @@ export default function HaircutSelector({
       {/* PREMIUM */}
       {!isLanding && (
         <>
+          <div className="mt-4">
+            <label className="text-sm text-white/60 mb-2 block">
+              Detalhes personalizados (opcional)
+            </label>
+            <textarea
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              placeholder="Ex: deixar o cabelo liso, comprimento até a nuca, mudar a cor para grafite..."
+              rows={2}
+              className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-sm text-white placeholder-white/30 resize-none focus:outline-none focus:border-primary/50"
+            />
+            <p className="text-xs text-white/30 mt-1">
+              Pode usar sozinho (sem escolher um corte acima) ou somar a um estilo selecionado.
+            </p>
+          </div>
+
           <button
             onClick={addCombination}
             disabled={!canAddCombination}
             className="mt-4 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
           >
-            Adicionar corte e barba para simulação
+            Adicionar para simulação
           </button>
 
           <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm space-y-3">
@@ -257,8 +291,13 @@ export default function HaircutSelector({
                 className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 border border-white/10"
               >
                 <div className="text-white font-medium">
-                  • {c.haircut.name}
-                  {c.beard && ` + ${c.beard.name}`}
+                  • {c.haircut?.name ?? c.beard?.name ?? "Corte personalizado"}
+                  {c.haircut && c.beard && ` + ${c.beard.name}`}
+                  {c.customText && (
+                    <span className="block text-xs text-white/40 font-normal mt-0.5">
+                      &ldquo;{c.customText}&rdquo;
+                    </span>
+                  )}
                 </div>
 
                 <button

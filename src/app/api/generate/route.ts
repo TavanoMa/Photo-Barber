@@ -243,9 +243,9 @@ HAIR EDIT RULES
  
 You may change ONLY the hair.
  
-Allowed: hair length, volume, texture, direction, density, fade/taper/neckline  
-Preserve: natural hairline, realistic growth patterns, believable barber blending
- 
+Allowed: hair length, volume, texture, direction, density, fade/taper/neckline, hair color (ONLY if explicitly requested in the custom instructions below)
+Preserve: natural hairline, realistic growth patterns, believable barber blending. If no color change is explicitly requested, keep the EXACT original hair color.
+
 NO wigs. NO painted hair. NO fake strands. NO over sharpening. NO beauty filters.
 `
  
